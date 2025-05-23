@@ -7,9 +7,6 @@ dataset: [MNIST, CIFAR-10, PathMNIST, YahooAnswers]
 
 # TraceFL: Interpretability-Driven Debugging in Federated Learning via Neuron Provenance
 
-[![Flower](https://img.shields.io/badge/Flower-Federated%20Learning-blue)](https://flower.dev)
-[![License](https://img.shields.io/badge/License-Apache%202.0-green.svg)](https://opensource.org/licenses/Apache-2.0)
-
 > [!NOTE]
 > If you use this baseline in your work, please remember to cite the original authors of the paper as well as the Flower paper.
 
@@ -42,7 +39,7 @@ We introduce TraceFL, a fine-grained neuron provenance capturing mechanism that 
 
 **Hardware Setup:** Designed to run on both CPU and GPU. The implementation includes optimizations for GPU acceleration of neuron provenance computations. Default experiments run on CPU for broader accessibility.
 
-**Contributors:** Waris Gill, Ali Anwar, Muhammad Ali Gulzar
+**Contributors:** Ibrahim Ahmed Khan (Baseline Implementation)
 
 ## Experimental Setup
 
@@ -79,22 +76,30 @@ The following table shows the main hyperparameters for this baseline with their 
 
 ## Environment Setup
 
-To construct the Python environment, simply run:
+To construct the Python environment follow these steps:
 
 ```bash
-# Navigate to the TraceFL directory
-cd flower/baselines/tracefl
+# Set Python 3.10 (install with `pyenv install 3.10.14` if you don't have it)
+pyenv virtualenv 3.10.14 tracefl
 
-# Create and activate virtual environment
-python -m venv venv
-# Windows
-venv\Scripts\activate
-# Linux/Mac
-source venv/bin/activate
+# Activate the environment
+pyenv activate tracefl
 
-# Install dependencies
+# Install the baseline
 pip install -e .
 ```
+
+## Dependencies
+
+The dependencies for this baseline are specified in the `pyproject.toml` file. Key dependencies include:
+- Flower simulation framework (`flwr[simulation]>=1.15.2`)
+- PyTorch ecosystem (`torch==2.5.1`, `torchvision==0.20.1`)
+- Transformers for NLP models (`transformers[torch]==4.48.1`)
+- Configuration management (`omegaconf==2.3.0`)
+- Medical imaging datasets (`medmnist==3.0.2`)
+- Data handling and utilities (`datasets`, `numpy`, `pandas`, `scikit-learn`)
+
+See `pyproject.toml` for the complete list of dependencies with specific versions.
 
 ## Running the Experiments
 

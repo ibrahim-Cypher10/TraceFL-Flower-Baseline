@@ -8,6 +8,7 @@ process and manages the global model.
 import copy
 import logging
 import os
+from pathlib import Path
 
 import toml
 from omegaconf import OmegaConf
@@ -20,15 +21,24 @@ from tracefl.dataset import (
 from tracefl.fls import FLSimulation
 from tracefl.utils import set_exp_key
 
+# Get the directory where this file is located
+current_dir = Path(__file__).parent.parent.parent
+log_file_path = current_dir / "tracefl_experiment.log"
+
 logging.basicConfig(
     level=logging.INFO,
     format="[%(asctime)s][%(name)s] %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S,%f",
     handlers=[
         logging.StreamHandler(),
-        logging.FileHandler("tracefl_experiment.log", mode="w"),
+        logging.FileHandler(str(log_file_path), mode="w"),
     ],
+    force=True,  # Override any existing logging configuration
 )
+
+# Test that logging is working
+logging.info("TraceFL Server Application starting...")
+logging.info(f"Log file location: {log_file_path}")
 
 
 def server_fn(context: Context):
@@ -47,11 +57,18 @@ def server_fn(context: Context):
     -------
         ServerAppComponents: Configured server components including strategy and config
     """
+    logging.info("=== TraceFL Server Function Started ===")
+    print("--Server--")
+    print(context)
+    print("--Server--")
+    
     # Get experiment from environment variable, default to exp_1
     config_key = os.environ.get("EXPERIMENT", "exp_1")
     print(f"config_key: {config_key}")
+    logging.info(f"Selected experiment configuration: {config_key}")
 
     config_path = str(context.run_config[config_key])
+    logging.info(f"Loading configuration from: {config_path}")
     config = toml.load(config_path)
 
     cfg = OmegaConf.create(config)
@@ -63,12 +80,17 @@ def server_fn(context: Context):
         cfg.tool.tracefl.dirichlet_alpha = dirichlet_alpha_float
         cfg.tool.tracefl.data_dist.dirichlet_alpha = dirichlet_alpha_float
         print(f"Overriding dirichlet_alpha to: {dirichlet_alpha_float}")
+        logging.info(f"Overriding dirichlet_alpha to: {dirichlet_alpha_float}")
     
     cfg.tool.tracefl.exp_key = set_exp_key(cfg)
+    logging.info(f"Experiment key set to: {cfg.tool.tracefl.exp_key}")
 
+    logging.info("Loading client and server datasets...")
     ds_dict = get_clients_server_data(cfg)
+    logging.info(f"Datasets loaded successfully. Clients: {len(ds_dict.get('client2data', {}))}")
 
     # Initialize FLSimulation with proper configuration
+    logging.info("Initializing FL simulation...")
     sim = FLSimulation(
         copy.deepcopy(cfg),
         float(context.run_config["fraction-fit"]),
@@ -77,12 +99,16 @@ def server_fn(context: Context):
     )
 
     # Set up server and client data
+    logging.info("Setting up server and client data...")
     sim.set_server_data(ds_dict["server_testdata"])
     sim.set_clients_data(ds_dict["client2data"])
 
     # Configure the federated learning strategy
+    logging.info("Configuring federated learning strategy...")
     sim.set_strategy()
+    logging.info("Strategy configuration completed successfully")
 
+    logging.info("=== TraceFL Server Function Completed ===")
     # Return the configured components
     return ServerAppComponents(
         strategy=sim.strategy,
