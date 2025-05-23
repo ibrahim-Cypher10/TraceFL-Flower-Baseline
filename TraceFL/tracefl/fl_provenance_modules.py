@@ -13,8 +13,8 @@ from typing import Any, Dict, List, Optional, Set
 
 import torch
 
-from tracefl.models_utils import initialize_model
 from tracefl.models_train_eval import test_neural_network
+from tracefl.models_utils import initialize_model
 from tracefl.neuron_provenance import NeuronProvenance, getAllLayers
 from tracefl.utils import get_prov_eval_metrics, safe_len
 
@@ -139,8 +139,19 @@ class FederatedProvTrue:
 
     from typing import Dict, List
 
-    def _computeEvalMetrics(self, input2prov: List[Dict]) -> Dict[str, float]:
-        """Return Trace FL provenance metrics for the current round."""
+    def _compute_eval_metrics(self, input2prov: List[Dict]) -> Dict[str, float]:
+        """Compute evaluation metrics for provenance analysis.
+        
+        Parameters
+        ----------
+        input2prov : List[Dict]
+            List of dictionaries containing provenance data for each input
+            
+        Returns
+        -------
+        Dict[str, float]
+            Dictionary containing evaluation metrics including accuracy
+        """
         # ------- collect ground‑truth labels for provenance subset -------------
         data_loader = torch.utils.data.DataLoader(
             self.subset_test_data,
@@ -199,60 +210,90 @@ class FederatedProvTrue:
         return get_prov_eval_metrics(true_labels, predicted_labels)
 
     def run(self) -> Dict[str, Any]:
-        """Execute the provenance analysis process and return the results."""
-        r = self._sanity_check()
-        if r is None:
+        """Execute the provenance analysis process and return the results.
+        
+        Returns
+        -------
+        Dict[str, Any]
+            A dictionary containing:
+            - clients: List of client IDs
+            - data_points: Number of data points used
+            - eval_metrics: Dictionary of evaluation metrics
+            - test_data_acc: Test accuracy
+            - test_data_loss: Test loss
+            - prov_time: Time taken for provenance analysis
+            - round_id: Current round ID
+            - prov_layers: Set of layer types used
+            - Error: Error message if analysis failed
+        """
+        try:
+            r = self._sanity_check()
+            if r is None:
+                return {
+                    "clients": list(self.client2model.keys()),
+                    "data_points": safe_len(self.subset_test_data),
+                    "eval_metrics": {},
+                    "test_data_acc": self.acc,
+                    "test_data_loss": self.loss,
+                    "prov_time": -1,
+                    "round_id": self.round_id,
+                    "prov_layers": {
+                        type(layer) for layer in getAllLayers(self.prov_global_model)
+                    },
+                }
+
+            start_time = time.time()
+            
+            # Get num_classes from the correct path in configuration
+            num_classes = self.train_cfg.dataset.num_classes
+            
+            nprov = NeuronProvenance(
+                cfg=self.prov_cfg,
+                arch=self.train_cfg.model.arch,
+                test_data=self.subset_test_data,
+                gmodel=self.prov_global_model,
+                c2model=self.client2model,
+                num_classes=num_classes,
+                c2nk=self.client2num_examples,
+            )
+
+            logging.info("client ids: %s", list(self.client2model.keys()))
+
+            # Use consistent method name
+            input2prov = nprov.compute_input_provenance()
+            eval_metrics = self._compute_eval_metrics(input2prov)
+            end_time = time.time()
+
+            logging.info(
+                "[Round %s] TraceFL Accuracy = %.2f%%",
+                self.round_id,
+                eval_metrics["Accuracy"] * 100,
+            )
+            logging.info(
+                "Total Inputs: %d | GM_loss: %.4f | GM_acc: %.4f",
+                safe_len(self.subset_test_data),
+                self.loss,
+                self.acc,
+            )
+
             return {
                 "clients": list(self.client2model.keys()),
                 "data_points": safe_len(self.subset_test_data),
-                "eval_metrics": {},
+                "eval_metrics": eval_metrics,
                 "test_data_acc": self.acc,
                 "test_data_loss": self.loss,
-                "prov_time": -1,
+                "prov_time": end_time - start_time,
                 "round_id": self.round_id,
                 "prov_layers": {
                     type(layer) for layer in getAllLayers(self.prov_global_model)
                 },
             }
-
-        start_time = time.time()
-        nprov = NeuronProvenance(
-            cfg=self.prov_cfg,
-            arch=self.train_cfg.model.arch,
-            test_data=self.subset_test_data,
-            gmodel=self.prov_global_model,
-            c2model=self.client2model,
-            num_classes=self.train_cfg.dataset.num_classes,
-            c2nk=self.client2num_examples,
-        )
-
-        logging.info("client ids: %s", list(self.client2model.keys()))
-
-        input2prov = nprov.computeInputProvenance()
-        eval_metrics = self._computeEvalMetrics(input2prov)
-        end_time = time.time()
-
-        logging.info(
-            "[Round %s] TraceFL Accuracy = %.2f%%",
-            self.round_id,
-            eval_metrics["Accuracy"] * 100,
-        )
-        logging.info(
-            "Total Inputs: %d | GM_loss: %.4f | GM_acc: %.4f",
-            safe_len(self.subset_test_data),
-            self.loss,
-            self.acc,
-        )
-
-        return {
-            "clients": list(self.client2model.keys()),
-            "data_points": safe_len(self.subset_test_data),
-            "eval_metrics": eval_metrics,
-            "test_data_acc": self.acc,
-            "test_data_loss": self.loss,
-            "prov_time": end_time - start_time,
-            "round_id": self.round_id,
-            "prov_layers": {
-                type(layer) for layer in getAllLayers(self.prov_global_model)
-            },
-        }
+        except KeyError as e:
+            logging.error(f"Configuration error in provenance analysis: {str(e)}")
+            return {"Error": f"Configuration error: {str(e)}"}
+        except RuntimeError as e:
+            logging.error(f"Runtime error in provenance analysis: {str(e)}")
+            return {"Error": f"Runtime error: {str(e)}"}
+        except Exception as e:
+            logging.error(f"Unexpected error in provenance analysis: {str(e)}", exc_info=True)
+            return {"Error": f"Unexpected error: {str(e)}"}

@@ -85,16 +85,18 @@ def set_exp_key(cfg):
     -------
         str: A unique key identifying the experiment configuration
     """
-    if (
-        cfg.tool.tracefl.strategy.noise_multiplier >= 0
-        and cfg.tool.tracefl.strategy.clipping_norm >= 0
-    ):
+    # Check if DP is enabled
+    dp_enabled = (
+        cfg.tool.tracefl.strategy.noise_multiplier > 0
+        and cfg.tool.tracefl.strategy.clipping_norm > 0
+    )
+
+    if dp_enabled:
         dp_key = (
             f"DP-(noise{cfg.tool.tracefl.strategy.noise_multiplier}+clip{cfg.tool.tracefl.strategy.clipping_norm})-"
             f"{cfg.tool.tracefl.exp_key}-"
             f"{cfg.tool.tracefl.model.name}-{cfg.tool.tracefl.dataset.name}-"
             f"faulty_clients[[]]-"
-            f"noise_rate{cfg.tool.tracefl.strategy.noise_rate}-"
             f"TClients{cfg.tool.tracefl.data_dist.num_clients}-"
             f"{cfg.tool.tracefl.strategy.name}-(R{cfg.tool.tracefl.strategy.num_rounds}"
             f"-clientsPerR{cfg.tool.tracefl.strategy.clients_per_round})"
@@ -104,8 +106,21 @@ def set_exp_key(cfg):
             f"lr{cfg.tool.tracefl.client.lr}"
         )
         return dp_key
-
-    raise ValueError("Invalid config")
+    else:
+        # Non-DP experiment key
+        non_dp_key = (
+            f"NonDP-{cfg.tool.tracefl.exp_key}-"
+            f"{cfg.tool.tracefl.model.name}-{cfg.tool.tracefl.dataset.name}-"
+            f"faulty_clients[[]]-"
+            f"TClients{cfg.tool.tracefl.data_dist.num_clients}-"
+            f"{cfg.tool.tracefl.strategy.name}-(R{cfg.tool.tracefl.strategy.num_rounds}"
+            f"-clientsPerR{cfg.tool.tracefl.strategy.clients_per_round})"
+            f"-{cfg.tool.tracefl.data_dist.dist_type}{cfg.tool.tracefl.data_dist.dirichlet_alpha}"
+            f"-batch{cfg.tool.tracefl.data_dist.batch_size}"
+            f"-epochs{cfg.tool.tracefl.client.epochs}-"
+            f"lr{cfg.tool.tracefl.client.lr}"
+        )
+        return non_dp_key
 
 
 def get_prov_eval_metrics(labels, predicted_labels):

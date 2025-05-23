@@ -1,9 +1,9 @@
 """Custom Differential Privacy Strategy for TraceFL."""
 
-import logging
 from logging import INFO, WARNING
-import numpy as np
 from typing import Optional, Union
+
+import numpy as np
 
 from flwr.common import (
     EvaluateIns,
@@ -33,7 +33,7 @@ from tracefl.dp_utils import safe_clip_inputs_inplace
 
 class TraceFLDifferentialPrivacy(Strategy):
     """Custom differential privacy strategy for TraceFL.
-    
+
     This strategy uses our safe implementation of clipping that handles zero norm cases.
     """
 
@@ -48,11 +48,18 @@ class TraceFLDifferentialPrivacy(Strategy):
 
         self.strategy = strategy
 
-        if noise_multiplier < 0:
-            raise ValueError("The noise multiplier should be a non-negative value.")
+        # Validate DP parameters
+        if noise_multiplier <= 0:
+            raise ValueError(
+                "The noise multiplier must be positive when using DP. "
+                "Set to -1 to disable DP completely."
+            )
 
         if clipping_norm <= 0:
-            raise ValueError("The clipping norm should be a positive value.")
+            raise ValueError(
+                "The clipping norm must be positive when using DP. "
+                "Set to -1 to disable DP completely."
+            )
 
         if num_sampled_clients <= 0:
             raise ValueError(
@@ -63,6 +70,16 @@ class TraceFLDifferentialPrivacy(Strategy):
         self.clipping_norm = clipping_norm
         self.num_sampled_clients = num_sampled_clients
         self.current_round_params: NDArrays = []
+
+        # Log DP configuration
+        log(
+            INFO,
+            "Initialized DP strategy with "
+            "noise_multiplier=%.4f, clipping_norm=%.4f, num_clients=%d",
+            self.noise_multiplier,
+            self.clipping_norm,
+            self.num_sampled_clients,
+        )
 
     def __repr__(self) -> str:
         """Compute a string representation of the strategy."""
@@ -122,10 +139,10 @@ class TraceFLDifferentialPrivacy(Strategy):
             model_update = [
                 np.subtract(x, y) for (x, y) in zip(param, self.current_round_params)
             ]
-            
+
             # Use our safe clipping implementation
             safe_clip_inputs_inplace(model_update, self.clipping_norm)
-            
+
             log(
                 INFO,
                 "aggregate_fit: parameters are clipped by value: %.4f.",
@@ -135,7 +152,7 @@ class TraceFLDifferentialPrivacy(Strategy):
             # Add clipped update back to original parameters
             for i, _ in enumerate(self.current_round_params):
                 param[i] = self.current_round_params[i] + model_update[i]
-                
+
             # Convert back to parameters
             res.parameters = ndarrays_to_parameters(param)
 
@@ -176,4 +193,4 @@ class TraceFLDifferentialPrivacy(Strategy):
         self, server_round: int, parameters: Parameters
     ) -> Optional[tuple[float, dict[str, Scalar]]]:
         """Evaluate model parameters using an evaluation function from the strategy."""
-        return self.strategy.evaluate(server_round, parameters) 
+        return self.strategy.evaluate(server_round, parameters)

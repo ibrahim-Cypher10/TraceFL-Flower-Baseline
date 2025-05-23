@@ -5,7 +5,6 @@ system. It provides the client implementation that handles local model training 
 evaluation.
 """
 
-import copy
 import json
 
 import toml
@@ -17,13 +16,13 @@ from flwr.common import Context
 from tracefl.dataset import (
     get_clients_server_data,
 )
-from tracefl.fls import FLSimulation
+from tracefl.models_train_eval import train_neural_network
 from tracefl.models_utils import (
     get_parameters,
     initialize_model,
     set_parameters,
 )
-from tracefl.models_train_eval import train_neural_network
+
 
 class FlowerClient(NumPyClient):
     """A Flower client implementation for TraceFL.
@@ -149,6 +148,7 @@ def client_fn(context: Context):
 
     model_dict = initialize_model(cfg.tool.tracefl.model.name, cfg.tool.tracefl.dataset)
     local_epochs = int(context.run_config["local-epochs"])
+
     return FlowerClient(
         model_dict["model"],
         client_train_data,

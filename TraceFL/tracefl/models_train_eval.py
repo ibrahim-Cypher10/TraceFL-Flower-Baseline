@@ -6,17 +6,17 @@ TraceFL federated learning system. It supports both CNN and transformer models.
 
 import logging
 import torch
+import torchvision
 from transformers import Trainer, TrainingArguments
 
+from tracefl.models_cnn_trainer import (
+    _test_cnn,
+    _test_cnn_hf_trainer,
+    _train_cnn,
+)
 from tracefl.models_utils import (
     _compute_metrics,
-    get_parameters,
-    set_parameters,
-    initialize_model,
-    create_model,
-    _get_inputs_labels_from_batch,
 )
-from tracefl.models_cnn_trainer import CNNTrainer, _train_cnn, _test_cnn_hf_trainer, _test_cnn
 
 
 def _train_transformer(model, train_data, test_data, device, cfg):
@@ -104,20 +104,28 @@ def _test_transformer_model(args):
     return r
 
 
-def global_model_eval(arch, global_net_dict, server_testdata, batch_size=32):
-    """Evaluate the global model using plain PyTorch or HF Trainer."""
-    if arch == "cnn":
-        d = _test_cnn(global_net_dict["model"], test_data=server_testdata, device="cpu")
-    elif arch == "transformer":
+def global_model_eval(model_arch, model_dict):
+    """Evaluate the global model.
+
+    Args:
+        model_arch: Model architecture name
+        model_dict: Dictionary containing model and metadata
+
+    Returns:
+        Dictionary of evaluation metrics
+    """
+    if model_arch == "cnn":
+        d = _test_cnn(model_dict["model"], test_data=model_dict["test_data"], device="cpu")
+    elif model_arch == "transformer":
         d = _test_transformer_model(
             {
-                "model_dict": global_net_dict,
-                "test_data": server_testdata,
-                "batch_size": batch_size,
+                "model_dict": model_dict,
+                "test_data": model_dict["test_data"],
+                "batch_size": model_dict["batch_size"],
             }
         )
     else:
-        raise ValueError(f"Unsupported architecture: {arch}")
+        raise ValueError(f"Unsupported architecture: {model_arch}")
 
     return {
         "loss": d["eval_loss"],
@@ -169,3 +177,12 @@ def train_neural_network(tconfig):
         )
     else:
         raise ValueError(f"Architecture {tconfig['arch']} not supported")
+
+
+def create_model(model_name, num_classes):
+    """Create a neural network model based on the specified architecture."""
+    if model_name == "resnet18":
+        return torchvision.models.resnet18(num_classes=num_classes)
+    if model_name == "densenet121":
+        return torchvision.models.densenet121(num_classes=num_classes)
+    raise ValueError(f"Unknown model name: {model_name}")

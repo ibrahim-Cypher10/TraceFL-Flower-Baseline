@@ -62,13 +62,12 @@ def server_fn(context: Context):
         float(context.run_config["fraction-fit"]),
         int(context.run_config["num-server-rounds"]),
         int(context.run_config["local-epochs"]),
-        int(context.run_config["min-evaluate"]),
     )
-    
+
     # Set up server and client data
     sim.set_server_data(ds_dict["server_testdata"])
     sim.set_clients_data(ds_dict["client2data"])
-    
+
     # Configure the federated learning strategy
     sim.set_strategy()
 

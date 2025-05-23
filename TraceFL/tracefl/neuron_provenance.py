@@ -5,6 +5,7 @@ activations and gradients across different layers of neural networks.
 """
 
 import logging
+from typing import List, Dict, Any
 
 import torch
 import torch.nn.functional as F
@@ -44,7 +45,7 @@ class NeuronProvenance:
         self.gmodel = gmodel
         self.c2model = c2model
         self.num_classes = num_classes
-        self.device = cfg.tool.tracefl.device.device
+        self.device = cfg.device.device
         self.c2nk = c2nk
         self.client_ids = list(self.c2model.keys())
         self.layer_importance = compute_importance(len(getAllLayers(gmodel)))
@@ -54,7 +55,7 @@ class NeuronProvenance:
             cid: self.c2nk[cid] / sum(self.c2nk.values()) for cid in self.c2nk.keys()
         }
 
-    def _checkAnomlies(self, t):
+    def _check_anomalies(self, t):
         """Check the tensor for inf or NaN values.
 
         Parameters
@@ -75,7 +76,7 @@ class NeuronProvenance:
             logging.error(f"Total values: {torch.numel(t)}")
             raise ValueError("Anomalies detected in tensor")
 
-    def _calculateLayerContribution(
+    def _calculate_layer_contribution(
         self,
         global_neurons_outputs: torch.Tensor,
         global_layer_grads: torch.Tensor,
@@ -101,13 +102,13 @@ class NeuronProvenance:
             Dictionary mapping client IDs to their contribution for the layer.
         """
         client2avg = dict.fromkeys(self.client_ids, 0.0)
-        self._checkAnomlies(global_neurons_outputs)
-        self._checkAnomlies(global_layer_grads)
+        self._check_anomalies(global_neurons_outputs)
+        self._check_anomalies(global_layer_grads)
         global_layer_grads = global_layer_grads.flatten()
 
         for cid in self.client_ids:
             cli_acts = client2outputs[cid].to(self.device).flatten()
-            self._checkAnomlies(cli_acts)
+            self._check_anomalies(cli_acts)
             cli_part = torch.dot(cli_acts, global_layer_grads)
             client2avg[cid] = cli_part.item() * self.layer_importance[layer_id]
             cli_acts = cli_acts.cpu()
@@ -116,7 +117,7 @@ class NeuronProvenance:
         logging.debug(f"Max contributor: {max_contributor}")
         return client2avg
 
-    def _mapClientLayerContributions(self, layer_id: int):
+    def _map_client_layer_contributions(self, layer_id: int):
         """Map the contributions of clients for a specific layer.
 
         Parameters
@@ -144,7 +145,7 @@ class NeuronProvenance:
 
         c2l = {cid: client2layers[cid][layer_id] for cid in self.client_ids}
         client2outputs = {
-            c: self._evaluateLayer(layer, global_neurons_inputs)
+            c: self._evaluate_layer(layer, global_neurons_inputs)
             for c, layer in c2l.items()
         }
 
@@ -159,7 +160,7 @@ class NeuronProvenance:
             glayer_grads = torch.squeeze(
                 self.inputs2layer_grads[input_id][layer_id][1]
             ).to(self.device)
-            c2contribution = self._calculateLayerContribution(
+            c2contribution = self._calculate_layer_contribution(
                 global_neurons_outputs=global_neurons_outputs[input_id],
                 global_layer_grads=glayer_grads,
                 client2outputs=c2out_per_input,
@@ -169,7 +170,7 @@ class NeuronProvenance:
 
         return input2client2contribution
 
-    def _inplaceScaleClientWs(self):
+    def _inplace_scale_client_weights(self):
         """Scale client model weights based on the number of data points per client."""
         logging.debug("Scaling client weights based on data points per client.")
         logging.debug(f"Total clients in c2nk: {len(self.c2nk)}")
@@ -184,12 +185,12 @@ class NeuronProvenance:
                     cparam.data.mul_(scale_factor)
                 self.c2model[cid] = self.c2model[cid].eval().cpu()
 
-    def _captureLayerIO(self):
+    def _capture_layer_io(self):
         """Capture the inputs and outputs of all layers in the global model."""
         hook_manager = HookManager()
         glayers = getAllLayers(self.gmodel)
         logging.debug(f"Total layers in global model: {len(glayers)}")
-        hooks_forward = [hook_manager.insertForwardHook(layer) for layer in glayers]
+        hooks_forward = [hook_manager.insert_forward_hook(layer) for layer in glayers]
         self.gmodel.eval().to(self.device)
 
         test_neural_network(
@@ -198,11 +199,11 @@ class NeuronProvenance:
             self.test_data,
             batch_size=len(self.test_data),
         )
-        hook_manager.removeHooks(hooks_forward)
+        hook_manager.remove_hooks(hooks_forward)
         self.global_neurons_inputs_outputs_batch = hook_manager.forward_hooks_storage
-        hook_manager.clearStorages()
+        hook_manager.clear_storages()
 
-    def _captureLayerGradients(self):
+    def _capture_layer_gradients(self):
         """Capture gradients.
 
         Capture the gradients for each layer of the global model for the test data.
@@ -211,13 +212,13 @@ class NeuronProvenance:
         data_loader = torch.utils.data.DataLoader(self.test_data, batch_size=1)
         for m_input in data_loader:
             hook_manager = HookManager()
-            setGradientsofModel(
+            set_gradients_of_model(
                 self.arch, self.gmodel, m_input, self.device, hook_manager
             )
             self.inputs2layer_grads.append(hook_manager.backward_hooks_storage)
-            hook_manager.clearStorages()
+            hook_manager.clear_storages()
 
-    def _evaluateLayer(
+    def _evaluate_layer(
         self, client_layer: torch.nn.Module, global_neurons_inputs: torch.Tensor
     ) -> torch.Tensor:
         """Evaluate a client's layer using the global model's layer inputs."""
@@ -230,7 +231,7 @@ class NeuronProvenance:
         client_layer = client_layer.cpu()
         return outputs
 
-    def _aggregateClientContributions(self, input_id: int, layers2prov):
+    def _aggregate_client_contributions(self, input_id: int, layers2prov):
         """Aggregate the contributions.
 
         Aggregate the contribution of all clients for a given input across layers.
@@ -241,40 +242,54 @@ class NeuronProvenance:
                 client2totalcont[cid] += lprov[input_id][cid]
         return client2totalcont
 
-    def _normalizeContributions(self, contributions):
+    def _normalize_contributions(self, contributions):
         """Normalize client contributions using softmax."""
         cont_tensor = torch.tensor(list(contributions.values()))
         norm = F.softmax(cont_tensor, dim=0)
         client2prov = {cid: v.item() for cid, v in zip(self.client_ids, norm)}
         return dict(sorted(client2prov.items(), key=lambda item: item[1], reverse=True))
 
-    def _aggregateInputContributions(self, layers2prov):
+    def _aggregate_input_contributions(self, layers2prov):
         """Aggregate client contributions for each input across all layers."""
         input2prov = []
         for input_id in range(len(self.test_data)):
-            aggregated = self._aggregateClientContributions(input_id, layers2prov)
-            normalized = self._normalizeContributions(aggregated)
+            aggregated = self._aggregate_client_contributions(input_id, layers2prov)
+            normalized = self._normalize_contributions(aggregated)
             traced_client = max(normalized, key=normalized.get)
             input2prov.append(
                 {"traced_client": traced_client, "client2prov": normalized}
             )
         return input2prov
 
-    def computeInputProvenance(self):
-        """Compute the provenance of each input.
-
-        Aggregates client contributions across all layers to determine provenance.
+    def compute_input_provenance(self) -> List[Dict[str, Any]]:
+        """Compute the provenance of each input by aggregating client contributions across layers.
+        
+        This method:
+        1. Captures layer inputs and outputs
+        2. Captures layer gradients
+        3. Maps client contributions for each layer
+        4. Aggregates contributions across layers for each input
+        
+        Returns
+        -------
+        List[Dict[str, Any]]
+            List of dictionaries, where each dictionary contains:
+            - traced_client: ID of the client traced for this input
+            - client2prov: Dictionary mapping client IDs to their contribution scores
         """
-        self._captureLayerIO()
-        self._captureLayerGradients()
+        self._capture_layer_io()
+        self._capture_layer_gradients()
 
         layers2prov = []
         for layer_id in range(len(self.global_neurons_inputs_outputs_batch)):
-            client2cont = self._mapClientLayerContributions(layer_id)
+            client2cont = self._map_client_layer_contributions(layer_id)
             layers2prov.append(client2cont)
 
-        input2prov = self._aggregateInputContributions(layers2prov)
+        input2prov = self._aggregate_input_contributions(layers2prov)
         return input2prov
+
+    # Alias for backward compatibility
+    computeInputProvenance = compute_input_provenance
 
 
 class HookManager:
@@ -285,7 +300,7 @@ class HookManager:
         self.forward_hooks_storage = []
         self.backward_hooks_storage = []
 
-    def insertForwardHook(self, layer):
+    def insert_forward_hook(self, layer):
         """Insert a forward hook into the specified layer."""
 
         def forward_hook(module, input_tensor, output_tensor):
@@ -297,7 +312,7 @@ class HookManager:
 
         return layer.register_forward_hook(forward_hook)
 
-    def insertBackwardHook(self, layer):
+    def insert_backward_hook(self, layer):
         """Insert a backward hook into the specified layer."""
 
         def backward_hook(module, input_tensor, output_tensor):
@@ -310,47 +325,47 @@ class HookManager:
 
         return layer.register_full_backward_hook(backward_hook)
 
-    def clearStorages(self):
+    def clear_storages(self):
         """Clear the storage for forward and backward hooks."""
         self.forward_hooks_storage = []
         self.backward_hooks_storage = []
 
-    def removeHooks(self, hooks):
+    def remove_hooks(self, hooks):
         """Remove the provided hooks."""
         for hook in hooks:
             hook.remove()
 
 
-def setGradientsofModel(arch, net, input_data, device, hook_manager):
+def set_gradients_of_model(arch, net, input_data, device, hook_manager):
     """Set up hooks to capture gradients of the model during backward pass."""
     if arch == "transformer":
-        _setGradientsTransformerModel(net, input_data, device, hook_manager)
+        _set_gradients_transformer_model(net, input_data, device, hook_manager)
     elif arch == "cnn":
-        _setGradientsCNNModel(net, input_data, device, hook_manager)
+        _set_gradients_cnn_model(net, input_data, device, hook_manager)
     else:
         raise ValueError(f"Model architecture {arch} not supported")
 
 
-def _setGradientsCNNModel(net, input_for_model, device, hook_manager):
+def _set_gradients_cnn_model(net, input_for_model, device, hook_manager):
     """Set up hooks and compute gradients for a CNN model."""
     net.zero_grad()
     all_layers = getAllLayers(net)
-    hooks = [hook_manager.insertBackwardHook(layer) for layer in all_layers]
+    hooks = [hook_manager.insert_backward_hook(layer) for layer in all_layers]
     net.to(device)
     img_input = input_for_model["pixel_values"]
     outs = net(img_input.to(device))
     logits = outs
     _, predicted = torch.max(logits, dim=1)
     logits[0, predicted].backward()
-    hook_manager.removeHooks(hooks)
+    hook_manager.remove_hooks(hooks)
     hook_manager.backward_hooks_storage.reverse()
 
 
-def _setGradientsTransformerModel(net, input_data, device, hook_manager):
+def _set_gradients_transformer_model(net, input_data, device, hook_manager):
     """Set up hooks and compute gradients for a transformer model."""
     net.zero_grad()
     all_layers = getAllLayers(net)
-    hooks = [hook_manager.insertBackwardHook(layer) for layer in all_layers]
+    hooks = [hook_manager.insert_backward_hook(layer) for layer in all_layers]
     net.to(device)
     prepared = {
         k: torch.tensor(v, device=device).unsqueeze(0)
@@ -361,7 +376,7 @@ def _setGradientsTransformerModel(net, input_data, device, hook_manager):
     logits = outs.logits
     _, predicted = torch.max(logits, dim=1)
     logits[0, predicted].backward()
-    hook_manager.removeHooks(hooks)
+    hook_manager.remove_hooks(hooks)
     hook_manager.backward_hooks_storage.reverse()
 
 

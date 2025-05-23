@@ -1,8 +1,20 @@
+"""Utility functions for model management in federated learning.
+
+This module provides utility functions for model initialization, parameter management,
+and evaluation in a federated learning setting. It supports both transformer-based
+models (like BERT) and CNN models (like ResNet), with functionality for:
+- Model initialization and configuration
+- Parameter extraction and setting
+- Model evaluation and metrics computation
+- Dataset preparation and batch processing
+"""
+
 import logging
+
+import evaluate
 import numpy as np
 import torch
 import torchvision
-import evaluate
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
 
 
@@ -33,13 +45,21 @@ def _get_inputs_labels_from_batch(batch):
     """Extract input data and labels from a batch."""
     if "pixel_values" in batch:
         return batch["pixel_values"], batch["label"]
-    else:
-        x, y = batch
-        return x, y
+    x, y = batch
+    return x, y
 
 
 def initialize_model(name, cfg_dataset):
-    """Initialize and configure the model based on its name and dataset configuration."""
+    """Initialize and configure the model based on its name and dataset configuration.
+
+    Args:
+        name: Name of the model to initialize
+        cfg_dataset: Dataset configuration containing model parameters
+
+    Returns
+    -------
+        Dictionary containing the initialized model and number of classes
+    """
     model_dict = {"model": None, "num_classes": cfg_dataset.num_classes}
     if name in [
         "squeezebert/squeezebert-uncased",
@@ -82,7 +102,9 @@ def initialize_model(name, cfg_dataset):
             raise ValueError(f"Failed to initialize model {name}")
 
         if cfg_dataset.channels == 1:
-            model.conv1 = torch.nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3, bias=False)
+            model.conv1 = torch.nn.Conv2d(
+                1, 64, kernel_size=7, stride=2, padding=3, bias=False
+            )
 
         num_ftrs = model.fc.in_features
         model.fc = torch.nn.Linear(num_ftrs, cfg_dataset.num_classes)
@@ -91,7 +113,9 @@ def initialize_model(name, cfg_dataset):
     elif name == "densenet121":
         model = torchvision.models.densenet121(weights="IMAGENET1K_V1")
         if cfg_dataset.channels == 1:
-            logging.info("Changing the first layer of densenet model to accept 1 channel")
+            logging.info(
+                "Changing the first layer of densenet model to accept 1 channel"
+            )
             model.features[0] = torch.nn.Conv2d(
                 1, 64, kernel_size=(7, 7), stride=(2, 2), padding=(3, 3), bias=False
             )
@@ -106,7 +130,15 @@ def initialize_model(name, cfg_dataset):
 
 
 def get_parameters(model):
-    """Extract and return the parameters of a PyTorch model as a list of NumPy arrays."""
+    """Extract and return the parameters of a PyTorch model as a list of NumPy arrays.
+
+    Args:
+        model: PyTorch model to extract parameters from
+
+    Returns
+    -------
+        List of NumPy arrays containing model parameters
+    """
     model = model.cpu()
     return [val.cpu().detach().clone().numpy() for _, val in model.state_dict().items()]
 
@@ -123,7 +155,6 @@ def create_model(model_name, num_classes, cfg):
     """Create a neural network model based on the specified architecture."""
     if model_name == "resnet18":
         return torchvision.models.resnet18(num_classes=num_classes)
-    elif model_name == "densenet121":
+    if model_name == "densenet121":
         return torchvision.models.densenet121(num_classes=num_classes)
-    else:
-        raise ValueError(f"Unknown model name: {model_name}")
+    raise ValueError(f"Unknown model name: {model_name}")

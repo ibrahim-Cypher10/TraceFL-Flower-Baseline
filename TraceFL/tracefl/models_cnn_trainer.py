@@ -1,9 +1,19 @@
+"""CNN model trainer module for federated learning.
+
+This module provides training and evaluation functionality for CNN models in a federated
+learning setting. It includes both a custom CNNTrainer class that extends HuggingFace's
+Trainer, as well as utility functions for training and evaluating CNN models using
+PyTorch's native training loops.
+"""
+
 import gc
 import logging
+
 import torch
 from torch.utils.data import DataLoader
 from transformers import DefaultDataCollator, Trainer, TrainingArguments
-from tracefl.models_utils import _get_inputs_labels_from_batch, _compute_metrics
+
+from tracefl.models_utils import _compute_metrics, _get_inputs_labels_from_batch
 
 
 class CNNTrainer(Trainer):
@@ -15,8 +25,6 @@ class CNNTrainer(Trainer):
         args,
         train_data=None,
         test_data=None,
-        device=None,
-        cfg=None,
         compute_metrics=None,
         data_collator=None,
     ):
@@ -30,6 +38,17 @@ class CNNTrainer(Trainer):
         )
 
     def compute_loss(self, model, inputs, return_outputs=False):
+        """Compute the loss for the model on the given inputs.
+
+        Args:
+            model: The model to compute loss for
+            inputs: Dictionary containing 'labels' and 'pixel_values'
+            return_outputs: Whether to return model outputs along with loss
+
+        Returns
+        -------
+            Tuple of (loss, outputs) if return_outputs is True, else just loss
+        """
         labels = inputs.get("labels")
         batch_inputs = inputs.get("pixel_values")
         outputs = model(batch_inputs)
@@ -39,6 +58,19 @@ class CNNTrainer(Trainer):
         return (loss, outputs) if return_outputs else loss
 
     def prediction_step(self, model, inputs, prediction_loss_only, ignore_keys=None):
+        """Perform a prediction step on the model.
+
+        Args:
+            model: The model to use for prediction
+            inputs: Input data for prediction
+            prediction_loss_only: Whether to only compute loss
+            ignore_keys: Optional list of keys to ignore in inputs (unused)
+
+        Returns
+        -------
+            Tuple of (loss, labels, logits) if prediction_loss_only is False,
+            else just (loss, None, None)
+        """
         loss = None
         labels = None
         logits = None

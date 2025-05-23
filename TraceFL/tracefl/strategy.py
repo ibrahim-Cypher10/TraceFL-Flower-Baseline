@@ -31,7 +31,7 @@ class FedAvgSave(fl.server.strategy.FedAvg):
         super().__init__(*args, **kwargs)
         self.cfg = cfg
         self.backend_config = get_backend_config(cfg)
-        # These dictionaries are updated each round.
+        # EXTRA: Not essential for basic FL - used for provenance tracking
         self.client2ws = {}  # Mapping: client ID -> client model weights (if available)
         self.client2num_examples = (
             {}
@@ -41,6 +41,7 @@ class FedAvgSave(fl.server.strategy.FedAvg):
 
     def set_initial_parameters(self, initial_parameters):
         """Store the initial global model parameters."""
+        # EXTRA: Not essential for basic FL - used for provenance tracking
         self.initial_parameters = initial_parameters
 
     def aggregate_fit(self, server_round, results, failures):
@@ -70,28 +71,30 @@ class FedAvgSave(fl.server.strategy.FedAvg):
         if aggregated_parameters is not None:
             # Convert aggregated parameters to a PyTorch state_dict.
             gm_ws = self.get_state_dict_from_parameters(aggregated_parameters)
+            # EXTRA: Not essential for basic FL - used for provenance tracking
             self.gm_ws = gm_ws  # Save for provenance
             logging.info("Aggregated global model for round %s", server_round)
 
             # Process each client result.
             for client_proxy, fit_res in results:
                 cid = client_proxy.cid  # ✅ Real client ID
+                # EXTRA: Not essential for basic FL - used for provenance tracking
                 self.client2ws[cid] = self.get_state_dict_from_parameters(
                     fit_res.parameters
                 )
                 self.client2num_examples[cid] = fit_res.num_examples
 
-                # ✅ Collect class distribution if present
+                # EXTRA: Not essential for basic FL - used for provenance tracking
                 if "class_distribution" in fit_res.metrics:
                     self.client2class[cid] = fit_res.metrics["class_distribution"]
                 else:
                     self.client2class[cid] = {}
 
-            # Store initial global model parameters on the first round
+            # EXTRA: Not essential for basic FL - used for provenance tracking
             if self.initial_parameters is None:
                 self.initial_parameters = aggregated_parameters
 
-            # Update round-level provenance info
+            # EXTRA: Not essential for basic FL - used for provenance tracking
             update_round_data(
                 server_round,
                 self.initial_parameters,

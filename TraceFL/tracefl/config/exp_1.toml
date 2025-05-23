@@ -35,9 +35,8 @@ name = "fedavg"
 num_rounds = 2
 clients_per_round = 4
 # Differential Privacy Settings
-noise_multiplier = 0.001  # Match dp_noise from shell script
-clipping_norm = 15.0      # Match dp_clip from shell script
-noise_rate = "None"
+noise_multiplier = -1  # Match dp_noise from shell script
+clipping_norm = -1      # Match dp_clip from shell script
 
 [tool.tracefl.data_dist]
 dist_type = "non_iid_dirichlet"

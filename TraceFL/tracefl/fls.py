@@ -2,29 +2,29 @@
 
 import gc
 import logging
-import numpy as np
 import time
 
+import numpy as np
 import torch
 
 from flwr.common import ndarrays_to_parameters
+from tracefl.dp_strategy import TraceFLDifferentialPrivacy
 from tracefl.fl_provenance import round_lambda_prov
+from tracefl.models_train_eval import global_model_eval
 from tracefl.models_utils import (
     get_parameters,
     initialize_model,
     set_parameters,
 )
-from tracefl.models_train_eval import global_model_eval
 from tracefl.strategy import FedAvgSave
 from tracefl.utils import get_backend_config
-from tracefl.dp_utils import safe_clip_inputs_inplace
-from tracefl.dp_strategy import TraceFLDifferentialPrivacy
 
 
 class FLSimulation:
     """Main class to run the simulation."""
 
-    def __init__(self, cfg, ff, nsr, le, min_ev):
+    def __init__(self, cfg, ff, nsr, le):
+        # EXTRA: Not essential for basic FL - used for provenance tracking
         self.all_rounds_results = []
         self.cfg = cfg
         self.strategy = None
@@ -33,7 +33,7 @@ class FLSimulation:
         self.fraction_fit = ff
         self.num_server_rounds = nsr
         self.local_epochs = le
-        self.min_eval = min_ev
+        # EXTRA: Not essential for basic FL - used for timing
         self.start_time = time.time()
 
     def set_server_data(self, server_data):
@@ -62,24 +62,30 @@ class FLSimulation:
     def set_strategy(self):
         """Set the federated learning strategy.
 
-        This method configures the FL strategy based on the configuration.
-        If differential privacy is enabled (noise_multiplier and clipping_norm > 0),
-        it wraps the base strategy with a DP strategy.
+        This method configures the FL strategy based on the configuration. If
+        differential privacy is enabled (noise_multiplier and clipping_norm > 0), it
+        wraps the base strategy with a DP strategy.
         """
         try:
             model_dict = initialize_model(
                 self.cfg.tool.tracefl.model.name, self.cfg.tool.tracefl.dataset
             )
-            initial_parameters = ndarrays_to_parameters(get_parameters(model_dict["model"]))
+            initial_parameters = ndarrays_to_parameters(
+                get_parameters(model_dict["model"])
+            )
 
             # Verify initial parameters are not all zeros
             params = get_parameters(model_dict["model"])
             if all(np.all(p == 0) for p in params):
-                logging.warning("Initial parameters are all zeros. Reinitializing model...")
+                logging.warning(
+                    "Initial parameters are all zeros. Reinitializing model..."
+                )
                 model_dict = initialize_model(
                     self.cfg.tool.tracefl.model.name, self.cfg.tool.tracefl.dataset
                 )
-                initial_parameters = ndarrays_to_parameters(get_parameters(model_dict["model"]))
+                initial_parameters = ndarrays_to_parameters(
+                    get_parameters(model_dict["model"])
+                )
 
             strategy = FedAvgSave(
                 initial_parameters=initial_parameters,
@@ -96,11 +102,16 @@ class FLSimulation:
                 fit_metrics_aggregation_fn=self._fit_metrics_aggregation_fn,
             )
 
-            # Apply differential privacy if enabled in config
-            if (self.cfg.tool.tracefl.strategy.noise_multiplier > 0 and 
-                self.cfg.tool.tracefl.strategy.clipping_norm > 0):
+            # Check if DP should be enabled
+            dp_enabled = (
+                self.cfg.tool.tracefl.strategy.noise_multiplier > 0
+                and self.cfg.tool.tracefl.strategy.clipping_norm > 0
+            )
+
+            if dp_enabled:
                 logging.info(
-                    ">> ----------------------------- Running DP FL -----------------------------"
+                    ">> ----------------------------- "
+                    "Running DP FL -----------------------------"
                 )
                 dp_strategy = TraceFLDifferentialPrivacy(
                     strategy=strategy,
@@ -110,13 +121,23 @@ class FLSimulation:
                 )
                 self.strategy = dp_strategy
                 logging.info(
-                    f"Differential Privacy enabled with noise_multiplier={self.cfg.tool.tracefl.strategy.noise_multiplier}, "
+                    f"Differential Privacy enabled: "
+                    f"noise_mult={self.cfg.tool.tracefl.strategy.noise_multiplier}, "
                     f"clipping_norm={self.cfg.tool.tracefl.strategy.clipping_norm}"
                 )
             else:
                 logging.info(
-                    ">> ----------------------------- Running Non-DP FL -----------------------------"
+                    ">> ----------------------------- "
+                    "Running Non-DP FL -----------------------------"
                 )
+                if (
+                    self.cfg.tool.tracefl.strategy.noise_multiplier == -1
+                    or self.cfg.tool.tracefl.strategy.clipping_norm == -1
+                ):
+                    logging.info(
+                        "Differential Privacy disabled "
+                        "(noise_multiplier or clipping_norm set to -1)"
+                    )
                 self.strategy = strategy
 
         except Exception as e:
@@ -128,7 +149,8 @@ class FLSimulation:
         for nk, m in metrics:
             cid = int(m["cid"])
             logging.info(
-                f" Client {cid}, Loss Train {m['train_loss']}, Accuracy Train {m['train_accuracy']}, data_points = {nk}"
+                f" Client {cid}, Loss Train {m['train_loss']}, "
+                f"Accuracy Train {m['train_accuracy']}, data_points = {nk}"
             )
         return {"loss": 0.1, "accuracy": 0.2}
 
@@ -140,11 +162,21 @@ class FLSimulation:
             "local_epochs": self.cfg.tool.tracefl.client.epochs,
             "batch_size": self.cfg.tool.tracefl.data_dist.batch_size,
             "lr": self.cfg.tool.tracefl.client.lr,
-            "grad_clip": 1.0  # Add gradient clipping threshold
+            "grad_clip": 1.0,  # Add gradient clipping threshold
         }
         return config
 
-    def _evaluate_global_model(self, server_round, parameters, config):
+    def _evaluate_global_model(self, server_round, parameters, config=None):
+        """Evaluate the global model.
+
+        Args:
+            server_round: Current server round
+            parameters: Model parameters to evaluate
+            config: Optional configuration dictionary (unused)
+
+        Returns:
+            Tuple of (loss, metrics)
+        """
         logging.info("Evaluating initial global parameters")
         try:
             model_dict = initialize_model(
@@ -152,19 +184,28 @@ class FLSimulation:
             )
             set_parameters(model_dict["model"], parameters)
             model_dict["model"].eval()
+            model_dict["test_data"] = self.server_testdata  # Add test data to model_dict
 
             metrics = global_model_eval(
-                self.cfg.tool.tracefl.model.arch, model_dict, self.server_testdata
+                self.cfg.tool.tracefl.model.arch, model_dict
             )
             loss = metrics["loss"]
             acc = metrics["accuracy"]
+            # EXTRA: Not essential for basic FL - used for provenance tracking
             self.all_rounds_results.append({"loss": loss, "accuracy": acc})
 
             if server_round == 0:
-                logging.info(f"initial parameters (loss, other metrics): {loss}, {{'accuracy': {acc}, 'loss': {loss}, 'round': {server_round}}}")
+                logging.info(
+                    f"initial parameters (loss, other metrics): {loss}, "
+                    f"{{'accuracy': {acc}, 'loss': {loss}, 'round': {server_round}}}"
+                )
                 return loss, {"accuracy": acc, "loss": loss, "round": server_round}
 
-            logging.info(f"fit progress: ({server_round}, {loss}, {{'accuracy': {acc}, 'loss': {loss}, 'round': {server_round}}}, {time.time() - self.start_time})")
+            logging.info(
+                f"fit progress: ({server_round}, {loss}, "
+                f"{{'accuracy': {acc}, 'loss': {loss}, 'round': {server_round}}}, "
+                f"{time.time() - self.start_time})"
+            )
 
             if self.strategy is None:
                 logging.error("Strategy is not initialized")
@@ -200,6 +241,7 @@ class FLSimulation:
                 model.eval()
                 client2model[cid] = model
 
+            # EXTRA: Not essential for basic FL - provenance analysis code
             if not hasattr(fedavg, "gm_ws"):
                 print(
                     f"gm_ws not set — skipping provenance analysis "
@@ -207,6 +249,7 @@ class FLSimulation:
                 )
                 return loss, {"accuracy": acc, "loss": loss, "round": server_round}
 
+            # EXTRA: Not essential for basic FL - provenance tracking code
             prov_global_model_dict = initialize_model(
                 self.cfg.tool.tracefl.model.name, self.cfg.tool.tracefl.dataset
             )
@@ -214,9 +257,10 @@ class FLSimulation:
             prov_global_model.load_state_dict(fedavg.gm_ws)
             prov_global_model.eval()
 
+            # EXTRA: Not essential for basic FL - provenance analysis input
             provenance_input = {
                 "train_cfg": self.cfg.tool.tracefl,
-                "prov_cfg": self.cfg,
+                "prov_cfg": self.cfg.tool.tracefl,
                 "prov_global_model": prov_global_model,
                 "client2model": client2model,
                 "client2num_examples": fedavg.client2num_examples,
@@ -226,8 +270,18 @@ class FLSimulation:
             }
 
             logging.info(">> Running provenance analysis...")
-            prov_result = round_lambda_prov(**provenance_input)
-            logging.info(f">> Provenance analysis completed. Results:\n{prov_result}")
+            try:
+                prov_result = round_lambda_prov(**provenance_input)
+                logging.info(f">> Provenance analysis completed. Results:\n{prov_result}")
+            except KeyError as e:
+                logging.error(f"Configuration error in provenance analysis: {str(e)}")
+                prov_result = {"Error": f"Configuration error: {str(e)}"}
+            except RuntimeError as e:
+                logging.error(f"Runtime error in provenance analysis: {str(e)}")
+                prov_result = {"Error": f"Runtime error: {str(e)}"}
+            except Exception as e:
+                logging.error(f"Unexpected error in provenance analysis: {str(e)}", exc_info=True)
+                prov_result = {"Error": f"Unexpected error: {str(e)}"}
 
             gc.collect()
             return loss, {
