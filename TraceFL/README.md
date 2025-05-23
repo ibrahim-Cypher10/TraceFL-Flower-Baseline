@@ -28,6 +28,12 @@ We introduce TraceFL, a fine-grained neuron provenance capturing mechanism that 
 4. **Configurable Experiments** - Three pre-configured experiment setups with different parameters
 5. **Differential Privacy Integration** - Optional DP support through configurable noise and clipping parameters
 
+**Implementation Scope:** This Flower baseline implements the core TraceFL methodology rather than all paper experiments. The codebase is streamlined for:
+- Essential model architectures (ResNet-18 by default, supports ResNet variants 18-152, DenseNet-121, BERT-family transformers)
+- Standard datasets (MNIST, CIFAR-10, PathMNIST) with configurable non-IID partitioning
+- Practical scale (10 clients, 2-4 rounds) suitable for demonstrating the core concepts
+- Cross-platform compatibility and easy reproduction
+
 **Models Supported:**
 - **CNNs:** ResNet-18, ResNet-34, ResNet-50, ResNet-101, ResNet-152, DenseNet-121  
 - **Transformers:** BERT variants, DistilBERT, MiniLM, SquezeBERT, OpenAI-GPT, TinyBERT

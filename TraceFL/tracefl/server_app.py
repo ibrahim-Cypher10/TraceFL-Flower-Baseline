@@ -28,7 +28,7 @@ log_file_path = current_dir / "tracefl_experiment.log"
 logging.basicConfig(
     level=logging.INFO,
     format="[%(asctime)s][%(name)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S,%f",
+    datefmt="%Y-%m-%d %H:%M:%S",
     handlers=[
         logging.StreamHandler(),
         logging.FileHandler(str(log_file_path), mode="w"),
@@ -58,10 +58,6 @@ def server_fn(context: Context):
         ServerAppComponents: Configured server components including strategy and config
     """
     logging.info("=== TraceFL Server Function Started ===")
-    print("--Server--")
-    print(context)
-    print("--Server--")
-    
     # Get experiment from environment variable, default to exp_1
     config_key = os.environ.get("EXPERIMENT", "exp_1")
     print(f"config_key: {config_key}")

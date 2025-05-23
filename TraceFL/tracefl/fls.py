@@ -1,8 +1,14 @@
-"""fls.py."""
+"""TraceFL Federated Learning Simulation Module.
+
+This module implements the FLSimulation class which serves as the central orchestrator
+for TraceFL federated learning experiments. It is NOT redundant despite only the 
+strategy being used in the return - it performs critical setup and configuration work.
+"""
 
 import gc
 import logging
 import time
+from typing import Dict, List, Optional
 
 import numpy as np
 import torch
@@ -21,7 +27,28 @@ from tracefl.utils import get_backend_config
 
 
 class FLSimulation:
-    """Main class to run the simulation."""
+    """Central orchestrator for TraceFL federated learning experiments.
+    
+    This class is essential for TraceFL functionality and cannot be removed, despite
+    appearing to only provide the strategy. It performs critical functions including:
+    
+    1. **Strategy Configuration**: Creates and configures the appropriate FL strategy
+       based on configuration (with or without differential privacy)
+    2. **Model Initialization**: Handles model setup and parameter initialization  
+    3. **Data Management**: Sets up server and client data for provenance analysis
+    4. **Provenance Integration**: Integrates neuron provenance tracking capabilities
+    5. **Evaluation Orchestration**: Manages global model evaluation and metric tracking
+    6. **DP Integration**: Conditionally wraps strategies with differential privacy
+    
+    The strategy returned is pre-configured with all necessary components for TraceFL's
+    neuron provenance mechanism to function correctly in the Flower framework.
+    
+    Args:
+        cfg: Complete configuration object containing all experiment parameters
+        fraction_fit: Fraction of clients participating in each round
+        num_server_rounds: Total number of federated learning rounds
+        local_epochs: Number of local training epochs per client per round
+    """
 
     def __init__(self, cfg, ff, nsr, le):
         # EXTRA: Not essential for basic FL - used for provenance tracking
