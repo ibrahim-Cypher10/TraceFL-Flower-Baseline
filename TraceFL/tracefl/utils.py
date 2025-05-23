@@ -38,7 +38,7 @@ def get_backend_config(cfg):
     """Get the backend configuration for Ray-based federated learning execution.
 
     This function is used by the FLSimulation class to configure Ray backend settings
-    for distributed federated learning execution. It extracts client resource 
+    for distributed federated learning execution. It extracts client resource
     requirements from the configuration and formats them for Ray's distributed
     computing framework.
 
@@ -52,7 +52,7 @@ def get_backend_config(cfg):
             - client_resources: CPU/GPU allocation per client
             - init_args: Ray initialization arguments
             - actor: Framework-specific actor configurations
-            
+
     Note:
         This is specifically designed for Ray-based distributed FL execution.
         The returned configuration is used by FLSimulation when setting up

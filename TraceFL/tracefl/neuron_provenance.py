@@ -1,11 +1,11 @@
-"""Neuron-level provenance tracking in neural networks during federated learning.
+"""Neuron provenance tracking for federated learning.
 
 This module provides functionality for tracking and analyzing the provenance of neuron
 activations and gradients across different layers of neural networks.
 """
 
 import logging
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 
 import torch
 import torch.nn.functional as F
@@ -262,14 +262,14 @@ class NeuronProvenance:
         return input2prov
 
     def compute_input_provenance(self) -> List[Dict[str, Any]]:
-        """Compute the provenance of each input by aggregating client contributions across layers.
-        
+        """Compute the provenance by aggregating client contributions.
+
         This method:
         1. Captures layer inputs and outputs
         2. Captures layer gradients
         3. Maps client contributions for each layer
         4. Aggregates contributions across layers for each input
-        
+
         Returns
         -------
         List[Dict[str, Any]]

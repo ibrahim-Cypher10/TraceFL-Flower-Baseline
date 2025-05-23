@@ -136,14 +136,14 @@ def client_fn(context: Context):
     -------
         Client: Configured TraceFL client instance
     """
-    # Get experiment from environment variable, default to exp_1
+    # ========== Experiment Configuration ==========
     config_key = os.environ.get("EXPERIMENT", "exp_1")
     print(f"Config key: {config_key}")
 
     config_path = str(context.run_config[config_key])
     config = toml.load(config_path)
     cfg = OmegaConf.create(config)
-    
+
     # Override dirichlet_alpha if specified (for exp_3 data distribution experiments)
     dirichlet_alpha = os.environ.get("DIRICHLET_ALPHA")
     if dirichlet_alpha and config_key == "exp_3":
@@ -152,14 +152,16 @@ def client_fn(context: Context):
         cfg.tool.tracefl.data_dist.dirichlet_alpha = dirichlet_alpha_float
         print(f"Client overriding dirichlet_alpha to: {dirichlet_alpha_float}")
 
+    # ========== Client Data Preparation ==========
     partition_id = int(context.node_config["partition-id"])
     ds_dict = get_clients_server_data(cfg)
-
     client_train_data = ds_dict["client2data"].get(str(partition_id))
 
+    # ========== Model Initialization ==========
     model_dict = initialize_model(cfg.tool.tracefl.model.name, cfg.tool.tracefl.dataset)
     local_epochs = int(context.run_config["local-epochs"])
 
+    # ========== Return Configured Client ==========
     return FlowerClient(
         model_dict["model"],
         client_train_data,

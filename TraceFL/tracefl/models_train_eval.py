@@ -5,7 +5,7 @@ TraceFL federated learning system. It supports both CNN and transformer models.
 """
 
 import logging
-import torch
+
 import torchvision
 from transformers import Trainer, TrainingArguments
 
@@ -111,11 +111,14 @@ def global_model_eval(model_arch, model_dict):
         model_arch: Model architecture name
         model_dict: Dictionary containing model and metadata
 
-    Returns:
+    Returns
+    -------
         Dictionary of evaluation metrics
     """
     if model_arch == "cnn":
-        d = _test_cnn(model_dict["model"], test_data=model_dict["test_data"], device="cpu")
+        d = _test_cnn(
+            model_dict["model"], test_data=model_dict["test_data"], device="cpu"
+        )
     elif model_arch == "transformer":
         d = _test_transformer_model(
             {

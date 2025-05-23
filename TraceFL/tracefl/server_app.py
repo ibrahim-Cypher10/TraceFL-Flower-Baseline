@@ -57,18 +57,14 @@ def server_fn(context: Context):
     -------
         ServerAppComponents: Configured server components including strategy and config
     """
-    logging.info("=== TraceFL Server Function Started ===")
-    # Get experiment from environment variable, default to exp_1
+    # ========== Experiment Configuration ==========
     config_key = os.environ.get("EXPERIMENT", "exp_1")
     print(f"config_key: {config_key}")
-    logging.info(f"Selected experiment configuration: {config_key}")
 
     config_path = str(context.run_config[config_key])
-    logging.info(f"Loading configuration from: {config_path}")
     config = toml.load(config_path)
-
     cfg = OmegaConf.create(config)
-    
+
     # Override dirichlet_alpha if specified (for exp_3 data distribution experiments)
     dirichlet_alpha = os.environ.get("DIRICHLET_ALPHA")
     if dirichlet_alpha and config_key == "exp_3":
@@ -76,17 +72,12 @@ def server_fn(context: Context):
         cfg.tool.tracefl.dirichlet_alpha = dirichlet_alpha_float
         cfg.tool.tracefl.data_dist.dirichlet_alpha = dirichlet_alpha_float
         print(f"Overriding dirichlet_alpha to: {dirichlet_alpha_float}")
-        logging.info(f"Overriding dirichlet_alpha to: {dirichlet_alpha_float}")
-    
+
+    # ========== Dataset Preparation ==========
     cfg.tool.tracefl.exp_key = set_exp_key(cfg)
-    logging.info(f"Experiment key set to: {cfg.tool.tracefl.exp_key}")
-
-    logging.info("Loading client and server datasets...")
     ds_dict = get_clients_server_data(cfg)
-    logging.info(f"Datasets loaded successfully. Clients: {len(ds_dict.get('client2data', {}))}")
 
-    # Initialize FLSimulation with proper configuration
-    logging.info("Initializing FL simulation...")
+    # ========== FL Simulation Setup ==========
     sim = FLSimulation(
         copy.deepcopy(cfg),
         float(context.run_config["fraction-fit"]),
@@ -95,17 +86,13 @@ def server_fn(context: Context):
     )
 
     # Set up server and client data
-    logging.info("Setting up server and client data...")
     sim.set_server_data(ds_dict["server_testdata"])
     sim.set_clients_data(ds_dict["client2data"])
 
     # Configure the federated learning strategy
-    logging.info("Configuring federated learning strategy...")
     sim.set_strategy()
-    logging.info("Strategy configuration completed successfully")
 
-    logging.info("=== TraceFL Server Function Completed ===")
-    # Return the configured components
+    # ========== Return Configured Components ==========
     return ServerAppComponents(
         strategy=sim.strategy,
         config=ServerConfig(num_rounds=int(context.run_config["num-server-rounds"])),

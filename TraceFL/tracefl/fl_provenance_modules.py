@@ -121,7 +121,7 @@ class FederatedProvTrue:
         )
         self.subset_test_data = central_test_data.select(balanced_indices)
         if self.subset_test_data is not None and safe_len(self.subset_test_data) == 0:
-            logging.info("No correct predictions found")
+            logging.warning("No correct predictions found")
 
     def _sanity_check(self) -> float:
         """Perform sanity check on the selected data."""
@@ -133,6 +133,7 @@ class FederatedProvTrue:
             {"model": self.prov_global_model},
             self.subset_test_data,
         )["accuracy"]
+
         logging.info("Sanity check: %s", acc)
         assert int(acc) == 1, "Sanity check failed"
         return acc
@@ -141,25 +142,25 @@ class FederatedProvTrue:
 
     def _compute_eval_metrics(self, input2prov: List[Dict]) -> Dict[str, float]:
         """Compute evaluation metrics for provenance analysis.
-        
+
         Parameters
         ----------
         input2prov : List[Dict]
             List of dictionaries containing provenance data for each input
-            
+
         Returns
         -------
         Dict[str, float]
             Dictionary containing evaluation metrics including accuracy
         """
-        # ------- collect ground‑truth labels for provenance subset -------------
+        # ========== Collect Ground-Truth Labels ==========
         data_loader = torch.utils.data.DataLoader(
             self.subset_test_data,
             batch_size=1,
         )
         target_labels = [row["label"].item() for row in data_loader]
 
-        # ------- normalise ALL_ROUNDS_CLIENTS2CLASS to {str: int} -------------
+        # ========== Normalize Client Class Mappings ==========
         client2class: Dict[str, Dict[str, int]] = {}
         for cid in self.client2model:
             raw = self.all_rounds_clients2class[cid]
@@ -170,25 +171,27 @@ class FederatedProvTrue:
         true_labels: List[int] = []
         predicted_labels: List[int] = []
 
-        # ----------- evaluate each provenance record ---------------------------
+        # ========== Evaluate Each Provenance Record ==========
         for idx, prov_rec in enumerate(input2prov):
             traced_client = prov_rec["traced_client"]
             client2prov = prov_rec["client2prov"]
             target_l = target_labels[idx]
             target_l_str = str(target_l)
 
+            # Find responsible clients for this label
             responsible_clients = [
                 cid
                 for cid, c_labels in client2class.items()
                 if target_l_str in c_labels
             ]
+
             logging.info(
                 "*********** Input Label: %s, Responsible Client(s): %s *************",
                 target_l,
                 ",".join(f"c{cid}" for cid in responsible_clients),
             )
 
-            # ---------- correctness check & logging ----------------------------
+            # ========== TraceFL Correctness Check ==========
             if target_l_str in client2class[traced_client]:
                 logging.info(
                     "     Traced Client: c%s || Tracing = Correct",
@@ -203,7 +206,7 @@ class FederatedProvTrue:
                 predicted_labels.append(0)
             true_labels.append(1)
 
-            # ---------- pretty print contribution scores (optional) ------------
+            # ========== TraceFL Contribution Scores ==========
             contrib_pretty = {f"c{cid}": round(p, 2) for cid, p in client2prov.items()}
             logging.info("TraceFL Clients Contributions Rank: %s\n", contrib_pretty)
 
@@ -211,7 +214,7 @@ class FederatedProvTrue:
 
     def run(self) -> Dict[str, Any]:
         """Execute the provenance analysis process and return the results.
-        
+
         Returns
         -------
         Dict[str, Any]
@@ -227,6 +230,7 @@ class FederatedProvTrue:
             - Error: Error message if analysis failed
         """
         try:
+            # ========== Sanity Check ==========
             r = self._sanity_check()
             if r is None:
                 return {
@@ -242,11 +246,12 @@ class FederatedProvTrue:
                     },
                 }
 
+            # ========== TraceFL Neuron Provenance Analysis ==========
             start_time = time.time()
-            
+
             # Get num_classes from the correct path in configuration
             num_classes = self.train_cfg.dataset.num_classes
-            
+
             nprov = NeuronProvenance(
                 cfg=self.prov_cfg,
                 arch=self.train_cfg.model.arch,
@@ -259,11 +264,12 @@ class FederatedProvTrue:
 
             logging.info("client ids: %s", list(self.client2model.keys()))
 
-            # Use consistent method name
+            # ========== Compute Input Provenance ==========
             input2prov = nprov.compute_input_provenance()
             eval_metrics = self._compute_eval_metrics(input2prov)
             end_time = time.time()
 
+            # ========== TraceFL Results Logging ==========
             logging.info(
                 "[Round %s] TraceFL Accuracy = %.2f%%",
                 self.round_id,
@@ -276,6 +282,7 @@ class FederatedProvTrue:
                 self.acc,
             )
 
+            # ========== Return Results ==========
             return {
                 "clients": list(self.client2model.keys()),
                 "data_points": safe_len(self.subset_test_data),
@@ -288,6 +295,8 @@ class FederatedProvTrue:
                     type(layer) for layer in getAllLayers(self.prov_global_model)
                 },
             }
+
+        # ========== Error Handling ==========
         except KeyError as e:
             logging.error(f"Configuration error in provenance analysis: {str(e)}")
             return {"Error": f"Configuration error: {str(e)}"}
@@ -295,5 +304,7 @@ class FederatedProvTrue:
             logging.error(f"Runtime error in provenance analysis: {str(e)}")
             return {"Error": f"Runtime error: {str(e)}"}
         except Exception as e:
-            logging.error(f"Unexpected error in provenance analysis: {str(e)}", exc_info=True)
+            logging.error(
+                f"Unexpected error in provenance analysis: {str(e)}", exc_info=True
+            )
             return {"Error": f"Unexpected error: {str(e)}"}

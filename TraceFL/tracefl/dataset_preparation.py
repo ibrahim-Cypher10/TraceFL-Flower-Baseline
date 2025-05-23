@@ -74,6 +74,7 @@ def _get_medmnist(data_flag="pathmnist", download=True):
     hf_dataset = DatasetDict({"train": hf_train_dataset, "test": hf_test_dataset})
 
     logging.info("conversion to hf_dataset done")
+
     return hf_dataset
 
 
@@ -515,17 +516,18 @@ def _partition_helper(
             server_data = fds.load_split("test")
         else:
             server_data = fds.load_split("test").select(range(cfg.max_server_data_size))
-    logging.info(f"Partition helper: Keys in the dataset are: {server_data[0].keys()}")
+    # Keys in the dataset: {server_data[0].keys()}
 
     for cid in range(cfg.num_clients):
         client_partition = fds.load_partition(cid)
         temp_dict = {}
 
         if cfg.max_per_client_data_size > 0:
-            logging.info(f" Fixing partition for client {cid}")
+            # Fixing partition for client {cid}
             temp_dict = _fix_partition(cfg, client_partition, target_label_col)
         else:
             logging.info(f" No data partition fix requried for client {cid}")
+
             temp_dict = {
                 "partition": client_partition,
                 "partition_labels_count": getLabelsCount(
@@ -538,6 +540,7 @@ def _partition_helper(
             clients_class.append(temp_dict["partition_labels_count"])
 
     logging.info(" -- fix partition is done --")
+
     client2data = {f"{id}": v for id, v in enumerate(clients_data)}
     client2class = {f"{id}": v for id, v in enumerate(clients_class)}
     return {
@@ -725,6 +728,7 @@ class ClientsAndServerDatasets:
         self.server_testdata = d["server_data"]
         self.client2class = d["client2class"]
         self.fds = d["fds"]
+
         logging.info(f"client2class: {self.client2class}")
 
         logging.info(f"> client2class {self.client2class}")
