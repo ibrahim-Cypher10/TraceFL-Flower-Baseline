@@ -136,12 +136,21 @@ def client_fn(context: Context):
     -------
         Client: Configured TraceFL client instance
     """
+    # Get experiment from environment variable, default to exp_1
     config_key = os.environ.get("EXPERIMENT", "exp_1")
     print(f"Config key: {config_key}")
 
     config_path = str(context.run_config[config_key])
     config = toml.load(config_path)
     cfg = OmegaConf.create(config)
+    
+    # Override dirichlet_alpha if specified (for exp_3 data distribution experiments)
+    dirichlet_alpha = os.environ.get("DIRICHLET_ALPHA")
+    if dirichlet_alpha and config_key == "exp_3":
+        dirichlet_alpha_float = float(dirichlet_alpha)
+        cfg.tool.tracefl.dirichlet_alpha = dirichlet_alpha_float
+        cfg.tool.tracefl.data_dist.dirichlet_alpha = dirichlet_alpha_float
+        print(f"Client overriding dirichlet_alpha to: {dirichlet_alpha_float}")
 
     partition_id = int(context.node_config["partition-id"])
     ds_dict = get_clients_server_data(cfg)

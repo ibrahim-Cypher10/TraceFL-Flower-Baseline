@@ -170,6 +170,7 @@ min-evaluate = 1
 
 exp_1 = "tracefl/config/exp_1.toml"
 exp_2 = "tracefl/config/exp_2.toml"
+exp_3 = "tracefl/config/exp_3.toml"
 
 [tool.flwr.federations]
 default = "local-simulation"
