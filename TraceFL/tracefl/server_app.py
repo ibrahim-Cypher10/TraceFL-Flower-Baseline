@@ -7,6 +7,7 @@ process and manages the global model.
 
 import copy
 import logging
+import os
 
 import toml
 from omegaconf import OmegaConf
@@ -46,8 +47,9 @@ def server_fn(context: Context):
     -------
         ServerAppComponents: Configured server components including strategy and config
     """
-    possible_configs = ["exp_1", "exp_2"]
-    config_key = next((k for k in possible_configs if k in context.run_config), "exp_1")
+    config_key = os.environ.get("EXPERIMENT", "exp_1")
+    print(f"config_key: {config_key}")
+
     config_path = str(context.run_config[config_key])
     config = toml.load(config_path)
 

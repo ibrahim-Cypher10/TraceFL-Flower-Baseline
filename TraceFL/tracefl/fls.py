@@ -108,6 +108,10 @@ class FLSimulation:
                 and self.cfg.tool.tracefl.strategy.clipping_norm > 0
             )
 
+            print(f"DP enabled: {dp_enabled}")
+            print(f"Noise multiplier: {self.cfg.tool.tracefl.strategy.noise_multiplier}")
+            print(f"Clipping norm: {self.cfg.tool.tracefl.strategy.clipping_norm}")
+                    
             if dp_enabled:
                 logging.info(
                     ">> ----------------------------- "

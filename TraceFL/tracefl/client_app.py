@@ -6,6 +6,7 @@ evaluation.
 """
 
 import json
+import os
 
 import toml
 import torch
@@ -135,8 +136,9 @@ def client_fn(context: Context):
     -------
         Client: Configured TraceFL client instance
     """
-    possible_configs = ["exp_1", "exp_2"]
-    config_key = next((k for k in possible_configs if k in context.run_config), "exp_1")
+    config_key = os.environ.get("EXPERIMENT", "exp_1")
+    print(f"Config key: {config_key}")
+
     config_path = str(context.run_config[config_key])
     config = toml.load(config_path)
     cfg = OmegaConf.create(config)

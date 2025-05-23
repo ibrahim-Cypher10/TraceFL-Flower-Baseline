@@ -168,10 +168,8 @@ fraction-fit = 0.4
 local-epochs = 2
 min-evaluate = 1
 
-resnet = "tracefl/config/resnet.toml"
 exp_1 = "tracefl/config/exp_1.toml"
 exp_2 = "tracefl/config/exp_2.toml"
-
 
 [tool.flwr.federations]
 default = "local-simulation"
