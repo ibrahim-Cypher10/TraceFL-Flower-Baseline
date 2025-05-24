@@ -1,8 +1,14 @@
+All completed except a small list of changes that will improve final script score.
+
+
+
+
+
+
+
 Changes reduced the linting score to 9.3/10... just have to make following changes in list to take it to 10/10
 
 List of things to clean next:
-
-Let me break down the linter errors and what needs to be fixed to achieve a 10/10 score:
 
 1. **Import-related issues** (R0402, C0415):
    - Use `from transformers.models.bert import modeling_bert` instead of `import transformers.models.bert.modeling_bert as modeling_bert`
