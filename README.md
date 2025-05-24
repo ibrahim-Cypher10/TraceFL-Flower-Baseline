@@ -1,5 +1,4 @@
-Everything is complete, just need to take linting score to 10/10 currently it is at 9.3/10.
-
+Changes reduced the linting score to 9.3/10... just have to make following changes in list to take it to 10/10
 
 List of things to clean next:
 
