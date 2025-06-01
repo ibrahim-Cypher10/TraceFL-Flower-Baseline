@@ -1,154 +1,137 @@
-[2025-05-27 04:09:00][root] TraceFL Server Application starting...
-[2025-05-27 04:09:00][root] Log file location: D:\Virginia_Tech\TraceFL\Submission\Github-Repo\TraceFL-in-Flwr\tracefl_experiment.log
-[2025-05-27 04:09:00][flwr] Initialising: RayBackend
-[2025-05-27 04:09:00][flwr] Backend config: {'client_resources': {'num_cpus': 2, 'num_gpus': 0}, 'init_args': {'logging_level': 30, 'log_to_driver': True}, 'actor': {'tensorflow': 0}}
-[2025-05-27 04:09:07][flwr] Constructed ActorPool with: 10 actors
-[2025-05-27 04:09:07][flwr] Using InMemoryState
-[2025-05-27 04:09:28][root]  -- fix partition is done --
-[2025-05-27 04:09:29][root] client2class: {'0': {9: 209, 6: 939, 5: 188, 4: 376, 0: 108, 2: 123, 1: 95, 3: 10}, '1': {0: 745, 8: 1002, 5: 285, 4: 13, 6: 3}, '2': {2: 541, 0: 605, 7: 117, 8: 135, 1: 21, 4: 13}, '3': {4: 366, 1: 748, 7: 516, 3: 93, 2: 43, 6: 27, 5: 203, 9: 52}, '4': {3: 1478, 4: 292, 7: 76, 9: 16, 0: 179, 2: 7}, '5': {2: 1186, 7: 328, 3: 341, 4: 64, 5: 25, 9: 41, 6: 24, 1: 27, 0: 12}, '6': {5: 329, 6: 730, 1: 364, 7: 54, 3: 138, 2: 339, 0: 72, 8: 22}, '7': {9: 1065, 1: 294, 2: 410, 5: 44, 4: 235}, '8': {1: 717, 7: 999, 4: 131, 6: 50, 3: 49, 5: 92, 0: 3, 9: 7}, '9': {0: 51, 4: 357, 8: 88, 5: 707, 9: 743, 6: 74, 3: 28}}
-[2025-05-27 04:09:29][root] > client2class {'0': {9: 209, 6: 939, 5: 188, 4: 376, 0: 108, 2: 123, 1: 95, 3: 10}, '1': {0: 745, 8: 1002, 5: 285, 4: 13, 6: 3}, '2': {2: 541, 0: 605, 7: 117, 8: 135, 1: 21, 4: 13}, '3': {4: 366, 1: 748, 7: 516, 3: 93, 2: 43, 6: 27, 5: 203, 9: 52}, '4': {3: 1478, 4: 292, 7: 76, 9: 16, 0: 179, 2: 7}, '5': {2: 1186, 7: 328, 3: 341, 4: 64, 5: 25, 9: 41, 6: 24, 1: 27, 0: 12}, '6': {5: 329, 6: 730, 1: 364, 7: 54, 3: 138, 2: 339, 0: 72, 8: 22}, '7': {9: 1065, 1: 294, 2: 410, 5: 44, 4: 235}, '8': {1: 717, 7: 999, 4: 131, 6: 50, 3: 49, 5: 92, 0: 3, 9: 7}, '9': {0: 51, 4: 357, 8: 88, 5: 707, 9: 743, 6: 74, 3: 28}}
-[2025-05-27 04:09:29][root] Data per client in experiment [2048, 2048, 1432, 2048, 2048, 2048, 2048, 2048, 2048, 2048]
-[2025-05-27 04:09:29][root] Min data on a client: 1432
-[2025-05-27 04:09:29][root] >> ----------------------------- Running DP FL -----------------------------
-[2025-05-27 04:09:29][flwr] Initialized DP strategy with noise_multiplier=0.0010, clipping_norm=15.0000, num_clients=4
-[2025-05-27 04:09:29][root] Differential Privacy enabled: noise_mult=0.001, clipping_norm=15.0
-[2025-05-27 04:09:29][flwr] Starting Flower ServerApp, config: num_rounds=2, no round_timeout
-[2025-05-27 04:09:29][flwr] 
-[2025-05-27 04:09:29][flwr] [INIT]
-[2025-05-27 04:09:29][flwr] Requesting initial parameters from one random client
-[2025-05-27 04:09:59][flwr] Failed to receive initial parameters from the client. Empty initial parameters will be used.
-[2025-05-27 04:09:59][flwr] Starting evaluation of initial global parameters
-[2025-05-27 04:10:04][root] initial parameters (loss, other metrics): 2.3204663395881653, {'accuracy': 0.1123046875, 'loss': 2.3204663395881653, 'round': 0}
-[2025-05-27 04:10:04][flwr] initial parameters (loss, other metrics): 2.3204663395881653, {'accuracy': 0.1123046875, 'loss': 2.3204663395881653, 'round': 0}
-[2025-05-27 04:10:04][flwr] 
-[2025-05-27 04:10:04][flwr] [ROUND 1]
-[2025-05-27 04:10:04][flwr] configure_fit: strategy sampled 4 clients (out of 10)
-[2025-05-27 04:11:47][flwr] aggregate_fit: received 4 results and 0 failures
-[2025-05-27 04:11:47][tracefl.dp_utils] Invalid model update format
-[2025-05-27 04:11:47][flwr] aggregate_fit: parameters are clipped by value: 15.0000.
-[2025-05-27 04:11:47][tracefl.dp_utils] Invalid model update format
-[2025-05-27 04:11:47][flwr] aggregate_fit: parameters are clipped by value: 15.0000.
-[2025-05-27 04:11:47][tracefl.dp_utils] Invalid model update format
-[2025-05-27 04:11:47][flwr] aggregate_fit: parameters are clipped by value: 15.0000.
-[2025-05-27 04:11:47][tracefl.dp_utils] Invalid model update format
-[2025-05-27 04:11:47][flwr] aggregate_fit: parameters are clipped by value: 15.0000.
-[2025-05-27 04:11:47][root] Aggregated global model for round 1
-[2025-05-27 04:11:48][flwr] aggregate_fit: central DP noise with 0.0037 stdev added
-[2025-05-27 04:11:53][root] fit progress: (1, 2.3727163076400757, {'accuracy': 0.10400390625, 'loss': 2.3727163076400757, 'round': 1}, 144.60390734672546)
-[2025-05-27 04:11:54][root] >> Running provenance analysis...
-[2025-05-27 04:12:01][root] Sanity check: 1.0
-[2025-05-27 04:12:01][root] client ids: ['11013105200487544088', '13830072143452213908', '2336644669824807853', '4996411103313231470']
-[2025-05-27 04:12:01][root] client ids: ['11013105200487544088', '13830072143452213908', '2336644669824807853', '4996411103313231470']
-[2025-05-27 04:12:03][root] *********** Input Label: 2, Responsible Client(s): c11013105200487544088,c13830072143452213908,c2336644669824807853,c4996411103313231470 *************
-[2025-05-27 04:12:03][root]      Traced Client: c13830072143452213908 || Tracing = Correct
-[2025-05-27 04:12:03][root] TraceFL Clients Contributions Rank: {'c13830072143452213908': 0.39, 'c11013105200487544088': 0.27, 'c4996411103313231470': 0.26, 'c2336644669824807853': 0.09}
+[2025-05-31 03:34:58][root] TraceFL Server Application starting...
+[2025-05-31 03:34:58][root] Log file location: D:\Virginia_Tech\TraceFL\Submission\Github-Repo\TraceFL-in-Flwr\tracefl_experiment.log
+[2025-05-31 03:34:58][flwr] Initialising: RayBackend
+[2025-05-31 03:34:58][flwr] Backend config: {'client_resources': {'num_cpus': 2, 'num_gpus': 0}, 'init_args': {'logging_level': 30, 'log_to_driver': True}, 'actor': {'tensorflow': 0}}
+[2025-05-31 03:35:12][flwr] Constructed ActorPool with: 10 actors
+[2025-05-31 03:35:12][flwr] Using InMemoryState
+[2025-05-31 03:35:34][root]  -- fix partition is done --
+[2025-05-31 03:35:35][root] client2class: {'0': {9: 209, 6: 939, 5: 188, 4: 376, 0: 108, 2: 123, 1: 95, 3: 10}, '1': {0: 745, 8: 1002, 5: 285, 4: 13, 6: 3}, '2': {2: 541, 0: 605, 7: 117, 8: 135, 1: 21, 4: 13}, '3': {4: 366, 1: 748, 7: 516, 3: 93, 2: 43, 6: 27, 5: 203, 9: 52}, '4': {3: 1478, 4: 292, 7: 76, 9: 16, 0: 179, 2: 7}, '5': {2: 1186, 7: 328, 3: 341, 4: 64, 5: 25, 9: 41, 6: 24, 1: 27, 0: 12}, '6': {5: 329, 6: 730, 1: 364, 7: 54, 3: 138, 2: 339, 0: 72, 8: 22}, '7': {9: 1065, 1: 294, 2: 410, 5: 44, 4: 235}, '8': {1: 717, 7: 999, 4: 131, 6: 50, 3: 49, 5: 92, 0: 3, 9: 7}, '9': {0: 51, 4: 357, 8: 88, 5: 707, 9: 743, 6: 74, 3: 28}}
+[2025-05-31 03:35:35][root] > client2class {'0': {9: 209, 6: 939, 5: 188, 4: 376, 0: 108, 2: 123, 1: 95, 3: 10}, '1': {0: 745, 8: 1002, 5: 285, 4: 13, 6: 3}, '2': {2: 541, 0: 605, 7: 117, 8: 135, 1: 21, 4: 13}, '3': {4: 366, 1: 748, 7: 516, 3: 93, 2: 43, 6: 27, 5: 203, 9: 52}, '4': {3: 1478, 4: 292, 7: 76, 9: 16, 0: 179, 2: 7}, '5': {2: 1186, 7: 328, 3: 341, 4: 64, 5: 25, 9: 41, 6: 24, 1: 27, 0: 12}, '6': {5: 329, 6: 730, 1: 364, 7: 54, 3: 138, 2: 339, 0: 72, 8: 22}, '7': {9: 1065, 1: 294, 2: 410, 5: 44, 4: 235}, '8': {1: 717, 7: 999, 4: 131, 6: 50, 3: 49, 5: 92, 0: 3, 9: 7}, '9': {0: 51, 4: 357, 8: 88, 5: 707, 9: 743, 6: 74, 3: 28}}
+[2025-05-31 03:35:35][root] Data per client in experiment [2048, 2048, 1432, 2048, 2048, 2048, 2048, 2048, 2048, 2048]
+[2025-05-31 03:35:35][root] Min data on a client: 1432
+[2025-05-31 03:35:35][root] >> ----------------------------- Running DP FL -----------------------------
+[2025-05-31 03:35:35][flwr] Initialized DP strategy with noise_multiplier=0.0010, clipping_norm=15.0000, num_clients=4
+[2025-05-31 03:35:35][root] Differential Privacy enabled: noise_mult=0.001, clipping_norm=15.0
+[2025-05-31 03:35:35][flwr] Starting Flower ServerApp, config: num_rounds=2, no round_timeout
+[2025-05-31 03:35:35][flwr] 
+[2025-05-31 03:35:35][flwr] [INIT]
+[2025-05-31 03:35:35][flwr] Requesting initial parameters from one random client
+[2025-05-31 03:36:21][flwr] Failed to receive initial parameters from the client. Empty initial parameters will be used.
+[2025-05-31 03:36:21][flwr] Starting evaluation of initial global parameters
+[2025-05-31 03:36:28][root] initial parameters (loss, other metrics): 2.3212934732437134, {'accuracy': 0.08544921875, 'loss': 2.3212934732437134, 'round': 0}
+[2025-05-31 03:36:28][flwr] initial parameters (loss, other metrics): 2.3212934732437134, {'accuracy': 0.08544921875, 'loss': 2.3212934732437134, 'round': 0}
+[2025-05-31 03:36:28][flwr] 
+[2025-05-31 03:36:28][flwr] [ROUND 1]
+[2025-05-31 03:36:28][flwr] configure_fit: strategy sampled 4 clients (out of 10)
+[2025-05-31 03:38:36][flwr] aggregate_fit: received 4 results and 0 failures
+[2025-05-31 03:38:36][tracefl.dp_utils] Invalid model update format
+[2025-05-31 03:38:36][flwr] aggregate_fit: parameters are clipped by value: 15.0000.
+[2025-05-31 03:38:36][tracefl.dp_utils] Invalid model update format
+[2025-05-31 03:38:36][flwr] aggregate_fit: parameters are clipped by value: 15.0000.
+[2025-05-31 03:38:36][tracefl.dp_utils] Invalid model update format
+[2025-05-31 03:38:36][flwr] aggregate_fit: parameters are clipped by value: 15.0000.
+[2025-05-31 03:38:36][tracefl.dp_utils] Invalid model update format
+[2025-05-31 03:38:36][flwr] aggregate_fit: parameters are clipped by value: 15.0000.
+[2025-05-31 03:38:37][root] Aggregated global model for round 1
+[2025-05-31 03:38:38][flwr] aggregate_fit: central DP noise with 0.0037 stdev added
+[2025-05-31 03:38:46][root] fit progress: (1, 2.4206724762916565, {'accuracy': 0.087890625, 'loss': 2.4206724762916565, 'round': 1}, 190.70328497886658)
+[2025-05-31 03:38:46][root] >> Running provenance analysis...
+[2025-05-31 03:38:55][root] Sanity check: 1.0
+[2025-05-31 03:38:55][root] client ids: ['7387000257486386462', '8690095942221775978', '10842323477200033631', '2716077041602007218']
+[2025-05-31 03:38:55][root] client ids: ['7387000257486386462', '8690095942221775978', '10842323477200033631', '2716077041602007218']
+[2025-05-31 03:38:57][root] *********** Input Label: 0, Responsible Client(s): c7387000257486386462,c8690095942221775978,c10842323477200033631,c2716077041602007218 *************
+[2025-05-31 03:38:57][root]      Traced Client: c7387000257486386462 || Tracing = Correct
+[2025-05-31 03:38:57][root] TraceFL Clients Contributions Rank: {'c7387000257486386462': 0.52, 'c10842323477200033631': 0.31, 'c2716077041602007218': 0.09, 'c8690095942221775978': 0.08}
 
-[2025-05-27 04:12:03][root] *********** Input Label: 2, Responsible Client(s): c11013105200487544088,c13830072143452213908,c2336644669824807853,c4996411103313231470 *************
-[2025-05-27 04:12:03][root]      Traced Client: c13830072143452213908 || Tracing = Correct
-[2025-05-27 04:12:03][root] TraceFL Clients Contributions Rank: {'c13830072143452213908': 0.39, 'c11013105200487544088': 0.27, 'c4996411103313231470': 0.26, 'c2336644669824807853': 0.09}
+[2025-05-31 03:38:57][root] *********** Input Label: 0, Responsible Client(s): c7387000257486386462,c8690095942221775978,c10842323477200033631,c2716077041602007218 *************
+[2025-05-31 03:38:57][root]      Traced Client: c7387000257486386462 || Tracing = Correct
+[2025-05-31 03:38:57][root] TraceFL Clients Contributions Rank: {'c7387000257486386462': 0.52, 'c10842323477200033631': 0.32, 'c2716077041602007218': 0.09, 'c8690095942221775978': 0.08}
 
-[2025-05-27 04:12:03][root] [Round 1] TraceFL Accuracy = 100.00%
-[2025-05-27 04:12:03][root] Total Inputs: 2 | GM_loss: 2.3752 | GM_acc: 0.1040
-[2025-05-27 04:12:03][root] >> Provenance analysis completed. Results:
-{'clients': ['11013105200487544088', '13830072143452213908', '2336644669824807853', '4996411103313231470'], 'data_points': 2, 'eval_metrics': {'Accuracy': 1.0}, 'test_data_acc': 0.10400390625, 'test_data_loss': 2.375155448913574, 'prov_time': 1.9998974800109863, 'round_id': '1', 'prov_layers': {<class 'torch.nn.modules.conv.Conv2d'>, <class 'torch.nn.modules.linear.Linear'>}}
-[2025-05-27 04:12:03][flwr] fit progress: (1, 2.3727163076400757, {'accuracy': 0.10400390625, 'loss': 2.3727163076400757, 'round': 1, 'prov_result': {'clients': ['11013105200487544088', '13830072143452213908', '2336644669824807853', '4996411103313231470'], 'data_points': 2, 'eval_metrics': {'Accuracy': 1.0}, 'test_data_acc': 0.10400390625, 'test_data_loss': 2.375155448913574, 'prov_time': 1.9998974800109863, 'round_id': '1', 'prov_layers': {<class 'torch.nn.modules.conv.Conv2d'>, <class 'torch.nn.modules.linear.Linear'>}}}, 119.48556260002078)
-[2025-05-27 04:12:03][flwr] configure_evaluate: no clients selected, skipping evaluation
-[2025-05-27 04:12:03][flwr] 
-[2025-05-27 04:12:03][flwr] [ROUND 2]
-[2025-05-27 04:12:03][flwr] configure_fit: strategy sampled 4 clients (out of 10)
-[2025-05-27 04:15:15][flwr] aggregate_fit: received 4 results and 0 failures
-[2025-05-27 04:15:15][tracefl.dp_utils] Invalid model update format
-[2025-05-27 04:15:15][flwr] aggregate_fit: parameters are clipped by value: 15.0000.
-[2025-05-27 04:15:15][tracefl.dp_utils] Invalid model update format
-[2025-05-27 04:15:15][flwr] aggregate_fit: parameters are clipped by value: 15.0000.
-[2025-05-27 04:15:15][tracefl.dp_utils] Invalid model update format
-[2025-05-27 04:15:15][flwr] aggregate_fit: parameters are clipped by value: 15.0000.
-[2025-05-27 04:15:15][tracefl.dp_utils] Invalid model update format
-[2025-05-27 04:15:15][flwr] aggregate_fit: parameters are clipped by value: 15.0000.
-[2025-05-27 04:15:16][root] Aggregated global model for round 2
-[2025-05-27 04:15:17][flwr] aggregate_fit: central DP noise with 0.0037 stdev added
-[2025-05-27 04:15:24][root] fit progress: (2, 2.815470576286316, {'accuracy': 0.25048828125, 'loss': 2.815470576286316, 'round': 2}, 355.0198690891266)
-[2025-05-27 04:15:25][root] >> Running provenance analysis...
-[2025-05-27 04:15:32][root] Sanity check: 1.0
-[2025-05-27 04:15:32][root] client ids: ['11013105200487544088', '13830072143452213908', '2336644669824807853', '4996411103313231470', '13776243227572729311', '15553660955954269859']
-[2025-05-27 04:15:32][root] client ids: ['11013105200487544088', '13830072143452213908', '2336644669824807853', '4996411103313231470', '13776243227572729311', '15553660955954269859']
-[2025-05-27 04:15:34][root] *********** Input Label: 1, Responsible Client(s): c11013105200487544088,c13830072143452213908,c4996411103313231470,c13776243227572729311,c15553660955954269859 *************
-[2025-05-27 04:15:34][root]      Traced Client: c13776243227572729311 || Tracing = Correct
-[2025-05-27 04:15:34][root] TraceFL Clients Contributions Rank: {'c13776243227572729311': 0.58, 'c11013105200487544088': 0.2, 'c13830072143452213908': 0.13, 'c4996411103313231470': 0.08, 'c15553660955954269859': 0.02, 'c2336644669824807853': 0.0}
+[2025-05-31 03:38:57][root] [Round 1] TraceFL Accuracy = 100.00%
+[2025-05-31 03:38:57][root] Total Inputs: 2 | GM_loss: 2.4148 | GM_acc: 0.0879
+[2025-05-31 03:38:57][root] >> Provenance analysis completed. Results:
+{'clients': ['7387000257486386462', '8690095942221775978', '10842323477200033631', '2716077041602007218'], 'data_points': 2, 'eval_metrics': {'Accuracy': 1.0}, 'test_data_acc': 0.087890625, 'test_data_loss': 2.4147896766662598, 'prov_time': 1.956709623336792, 'round_id': '1', 'prov_layers': {<class 'torch.nn.modules.conv.Conv2d'>, <class 'torch.nn.modules.linear.Linear'>}}
+[2025-05-31 03:38:57][flwr] fit progress: (1, 2.4206724762916565, {'accuracy': 0.087890625, 'loss': 2.4206724762916565, 'round': 1, 'prov_result': {'clients': ['7387000257486386462', '8690095942221775978', '10842323477200033631', '2716077041602007218'], 'data_points': 2, 'eval_metrics': {'Accuracy': 1.0}, 'test_data_acc': 0.087890625, 'test_data_loss': 2.4147896766662598, 'prov_time': 1.956709623336792, 'round_id': '1', 'prov_layers': {<class 'torch.nn.modules.conv.Conv2d'>, <class 'torch.nn.modules.linear.Linear'>}}}, 149.45819919998758)
+[2025-05-31 03:38:57][flwr] configure_evaluate: no clients selected, skipping evaluation
+[2025-05-31 03:38:57][flwr] 
+[2025-05-31 03:38:57][flwr] [ROUND 2]
+[2025-05-31 03:38:57][flwr] configure_fit: strategy sampled 4 clients (out of 10)
+[2025-05-31 03:40:54][flwr] aggregate_fit: received 4 results and 0 failures
+[2025-05-31 03:40:54][tracefl.dp_utils] Invalid model update format
+[2025-05-31 03:40:54][flwr] aggregate_fit: parameters are clipped by value: 15.0000.
+[2025-05-31 03:40:54][tracefl.dp_utils] Invalid model update format
+[2025-05-31 03:40:54][flwr] aggregate_fit: parameters are clipped by value: 15.0000.
+[2025-05-31 03:40:54][tracefl.dp_utils] Invalid model update format
+[2025-05-31 03:40:54][flwr] aggregate_fit: parameters are clipped by value: 15.0000.
+[2025-05-31 03:40:54][tracefl.dp_utils] Invalid model update format
+[2025-05-31 03:40:54][flwr] aggregate_fit: parameters are clipped by value: 15.0000.
+[2025-05-31 03:40:54][root] Aggregated global model for round 2
+[2025-05-31 03:40:55][flwr] aggregate_fit: central DP noise with 0.0037 stdev added
+[2025-05-31 03:41:03][root] fit progress: (2, 2.566487431526184, {'accuracy': 0.087890625, 'loss': 2.566487431526184, 'round': 2}, 327.90893959999084)
+[2025-05-31 03:41:04][root] >> Running provenance analysis...
+[2025-05-31 03:41:14][root] Sanity check: 1.0
+[2025-05-31 03:41:14][root] client ids: ['7387000257486386462', '8690095942221775978', '10842323477200033631', '2716077041602007218', '15427838013166656665']
+[2025-05-31 03:41:14][root] client ids: ['7387000257486386462', '8690095942221775978', '10842323477200033631', '2716077041602007218', '15427838013166656665']
+[2025-05-31 03:41:16][root] *********** Input Label: 0, Responsible Client(s): c7387000257486386462,c8690095942221775978,c10842323477200033631,c2716077041602007218,c15427838013166656665 *************
+[2025-05-31 03:41:16][root]      Traced Client: c7387000257486386462 || Tracing = Correct
+[2025-05-31 03:41:16][root] TraceFL Clients Contributions Rank: {'c7387000257486386462': 0.38, 'c10842323477200033631': 0.27, 'c2716077041602007218': 0.14, 'c8690095942221775978': 0.11, 'c15427838013166656665': 0.1}
 
-[2025-05-27 04:15:34][root] *********** Input Label: 1, Responsible Client(s): c11013105200487544088,c13830072143452213908,c4996411103313231470,c13776243227572729311,c15553660955954269859 *************
-[2025-05-27 04:15:34][root]      Traced Client: c13776243227572729311 || Tracing = Correct
-[2025-05-27 04:15:34][root] TraceFL Clients Contributions Rank: {'c13776243227572729311': 0.56, 'c11013105200487544088': 0.27, 'c13830072143452213908': 0.08, 'c4996411103313231470': 0.07, 'c15553660955954269859': 0.02, 'c2336644669824807853': 0.0}
+[2025-05-31 03:41:16][root] *********** Input Label: 0, Responsible Client(s): c7387000257486386462,c8690095942221775978,c10842323477200033631,c2716077041602007218,c15427838013166656665 *************
+[2025-05-31 03:41:16][root]      Traced Client: c7387000257486386462 || Tracing = Correct
+[2025-05-31 03:41:16][root] TraceFL Clients Contributions Rank: {'c7387000257486386462': 0.48, 'c10842323477200033631': 0.27, 'c2716077041602007218': 0.12, 'c8690095942221775978': 0.07, 'c15427838013166656665': 0.07}
 
-[2025-05-27 04:15:34][root] *********** Input Label: 2, Responsible Client(s): c11013105200487544088,c13830072143452213908,c2336644669824807853,c4996411103313231470,c13776243227572729311,c15553660955954269859 *************
-[2025-05-27 04:15:34][root]      Traced Client: c15553660955954269859 || Tracing = Correct
-[2025-05-27 04:15:34][root] TraceFL Clients Contributions Rank: {'c15553660955954269859': 0.7, 'c13830072143452213908': 0.15, 'c11013105200487544088': 0.06, 'c4996411103313231470': 0.05, 'c2336644669824807853': 0.03, 'c13776243227572729311': 0.02}
-
-[2025-05-27 04:15:34][root] *********** Input Label: 2, Responsible Client(s): c11013105200487544088,c13830072143452213908,c2336644669824807853,c4996411103313231470,c13776243227572729311,c15553660955954269859 *************
-[2025-05-27 04:15:34][root]      Traced Client: c15553660955954269859 || Tracing = Correct
-[2025-05-27 04:15:34][root] TraceFL Clients Contributions Rank: {'c15553660955954269859': 0.68, 'c13830072143452213908': 0.14, 'c11013105200487544088': 0.07, 'c4996411103313231470': 0.06, 'c2336644669824807853': 0.03, 'c13776243227572729311': 0.02}
-
-[2025-05-27 04:15:34][root] *********** Input Label: 6, Responsible Client(s): c11013105200487544088,c4996411103313231470,c13776243227572729311,c15553660955954269859 *************
-[2025-05-27 04:15:34][root]      Traced Client: c11013105200487544088 || Tracing = Correct
-[2025-05-27 04:15:34][root] TraceFL Clients Contributions Rank: {'c11013105200487544088': 0.58, 'c4996411103313231470': 0.36, 'c13776243227572729311': 0.03, 'c15553660955954269859': 0.02, 'c13830072143452213908': 0.01, 'c2336644669824807853': 0.0}
-
-[2025-05-27 04:15:34][root] *********** Input Label: 6, Responsible Client(s): c11013105200487544088,c4996411103313231470,c13776243227572729311,c15553660955954269859 *************
-[2025-05-27 04:15:34][root]      Traced Client: c11013105200487544088 || Tracing = Correct
-[2025-05-27 04:15:34][root] TraceFL Clients Contributions Rank: {'c11013105200487544088': 0.56, 'c4996411103313231470': 0.36, 'c13776243227572729311': 0.04, 'c15553660955954269859': 0.02, 'c13830072143452213908': 0.02, 'c2336644669824807853': 0.0}
-
-[2025-05-27 04:15:34][root] [Round 2] TraceFL Accuracy = 100.00%
-[2025-05-27 04:15:34][root] Total Inputs: 6 | GM_loss: 2.7742 | GM_acc: 0.2378
-[2025-05-27 04:15:34][root] >> Provenance analysis completed. Results:
-{'clients': ['11013105200487544088', '13830072143452213908', '2336644669824807853', '4996411103313231470', '13776243227572729311', '15553660955954269859'], 'data_points': 6, 'eval_metrics': {'Accuracy': 1.0}, 'test_data_acc': 0.23779296875, 'test_data_loss': 2.774203300476074, 'prov_time': 2.2220959663391113, 'round_id': '2', 'prov_layers': {<class 'torch.nn.modules.conv.Conv2d'>, <class 'torch.nn.modules.linear.Linear'>}}
-[2025-05-27 04:15:35][flwr] fit progress: (2, 2.815470576286316, {'accuracy': 0.25048828125, 'loss': 2.815470576286316, 'round': 2, 'prov_result': {'clients': ['11013105200487544088', '13830072143452213908', '2336644669824807853', '4996411103313231470', '13776243227572729311', '15553660955954269859'], 'data_points': 6, 'eval_metrics': {'Accuracy': 1.0}, 'test_data_acc': 0.23779296875, 'test_data_loss': 2.774203300476074, 'prov_time': 2.2220959663391113, 'round_id': '2', 'prov_layers': {<class 'torch.nn.modules.conv.Conv2d'>, <class 'torch.nn.modules.linear.Linear'>}}}, 331.08202540001366)
-[2025-05-27 04:15:35][flwr] configure_evaluate: no clients selected, skipping evaluation
-[2025-05-27 04:15:35][flwr] 
-[2025-05-27 04:15:35][flwr] [SUMMARY]
-[2025-05-27 04:15:35][flwr] Run finished 2 round(s) in 331.08s
-[2025-05-27 04:15:35][flwr] 	History (loss, centralized):
-[2025-05-27 04:15:35][flwr] 		round 0: 2.3204663395881653
-[2025-05-27 04:15:35][flwr] 		round 1: 2.3727163076400757
-[2025-05-27 04:15:35][flwr] 		round 2: 2.815470576286316
-[2025-05-27 04:15:35][flwr] 	History (metrics, distributed, fit):
-[2025-05-27 04:15:35][flwr] 	{'accuracy': [(1, 0.2), (2, 0.2)], 'loss': [(1, 0.1), (2, 0.1)]}
-[2025-05-27 04:15:35][flwr] 	History (metrics, centralized):
-[2025-05-27 04:15:35][flwr] 	{'accuracy': [(0, 0.1123046875), (1, 0.10400390625), (2, 0.25048828125)],
-[2025-05-27 04:15:35][flwr] 	 'loss': [(0, 2.3204663395881653),
-[2025-05-27 04:15:35][flwr] 	          (1, 2.3727163076400757),
-[2025-05-27 04:15:35][flwr] 	          (2, 2.815470576286316)],
-[2025-05-27 04:15:35][flwr] 	 'prov_result': [(1,
-[2025-05-27 04:15:35][flwr] 	                  {'clients': ['11013105200487544088',
-[2025-05-27 04:15:35][flwr] 	                               '13830072143452213908',
-[2025-05-27 04:15:35][flwr] 	                               '2336644669824807853',
-[2025-05-27 04:15:35][flwr] 	                               '4996411103313231470'],
-[2025-05-27 04:15:35][flwr] 	                   'data_points': 2,
-[2025-05-27 04:15:35][flwr] 	                   'eval_metrics': {'Accuracy': 1.0},
-[2025-05-27 04:15:35][flwr] 	                   'prov_layers': {<class 'torch.nn.modules.conv.Conv2d'>,
-[2025-05-27 04:15:35][flwr] 	                                   <class 'torch.nn.modules.linear.Linear'>},
-[2025-05-27 04:15:35][flwr] 	                   'prov_time': 1.9998974800109863,
-[2025-05-27 04:15:35][flwr] 	                   'round_id': '1',
-[2025-05-27 04:15:35][flwr] 	                   'test_data_acc': 0.10400390625,
-[2025-05-27 04:15:35][flwr] 	                   'test_data_loss': 2.375155448913574}),
-[2025-05-27 04:15:35][flwr] 	                 (2,
-[2025-05-27 04:15:35][flwr] 	                  {'clients': ['11013105200487544088',
-[2025-05-27 04:15:35][flwr] 	                               '13830072143452213908',
-[2025-05-27 04:15:35][flwr] 	                               '2336644669824807853',
-[2025-05-27 04:15:35][flwr] 	                               '4996411103313231470',
-[2025-05-27 04:15:35][flwr] 	                               '13776243227572729311',
-[2025-05-27 04:15:35][flwr] 	                               '15553660955954269859'],
-[2025-05-27 04:15:35][flwr] 	                   'data_points': 6,
-[2025-05-27 04:15:35][flwr] 	                   'eval_metrics': {'Accuracy': 1.0},
-[2025-05-27 04:15:35][flwr] 	                   'prov_layers': {<class 'torch.nn.modules.conv.Conv2d'>,
-[2025-05-27 04:15:35][flwr] 	                                   <class 'torch.nn.modules.linear.Linear'>},
-[2025-05-27 04:15:35][flwr] 	                   'prov_time': 2.2220959663391113,
-[2025-05-27 04:15:35][flwr] 	                   'round_id': '2',
-[2025-05-27 04:15:35][flwr] 	                   'test_data_acc': 0.23779296875,
-[2025-05-27 04:15:35][flwr] 	                   'test_data_loss': 2.774203300476074})],
-[2025-05-27 04:15:35][flwr] 	 'round': [(0, 0), (1, 1), (2, 2)]}
-[2025-05-27 04:15:35][flwr] 
-[2025-05-27 04:15:35][flwr] ServerApp finished running.
-[2025-05-27 04:15:35][flwr] ServerApp finished running.
-[2025-05-27 04:15:35][flwr] Triggered stop event for Simulation Engine.
-[2025-05-27 04:15:35][flwr] Terminated 10 actors
-[2025-05-27 04:15:36][flwr] Terminated RayBackend
-[2025-05-27 04:15:36][flwr] Stopping Simulation Engine now.
+[2025-05-31 03:41:16][root] [Round 2] TraceFL Accuracy = 100.00%
+[2025-05-31 03:41:16][root] Total Inputs: 2 | GM_loss: 2.5566 | GM_acc: 0.0879
+[2025-05-31 03:41:16][root] >> Provenance analysis completed. Results:
+{'clients': ['7387000257486386462', '8690095942221775978', '10842323477200033631', '2716077041602007218', '15427838013166656665'], 'data_points': 2, 'eval_metrics': {'Accuracy': 1.0}, 'test_data_acc': 0.087890625, 'test_data_loss': 2.5566306114196777, 'prov_time': 2.0393996238708496, 'round_id': '2', 'prov_layers': {<class 'torch.nn.modules.conv.Conv2d'>, <class 'torch.nn.modules.linear.Linear'>}}
+[2025-05-31 03:41:16][flwr] fit progress: (2, 2.566487431526184, {'accuracy': 0.087890625, 'loss': 2.566487431526184, 'round': 2, 'prov_result': {'clients': ['7387000257486386462', '8690095942221775978', '10842323477200033631', '2716077041602007218', '15427838013166656665'], 'data_points': 2, 'eval_metrics': {'Accuracy': 1.0}, 'test_data_acc': 0.087890625, 'test_data_loss': 2.5566306114196777, 'prov_time': 2.0393996238708496, 'round_id': '2', 'prov_layers': {<class 'torch.nn.modules.conv.Conv2d'>, <class 'torch.nn.modules.linear.Linear'>}}}, 288.092783399974)
+[2025-05-31 03:41:16][flwr] configure_evaluate: no clients selected, skipping evaluation
+[2025-05-31 03:41:16][flwr] 
+[2025-05-31 03:41:16][flwr] [SUMMARY]
+[2025-05-31 03:41:16][flwr] Run finished 2 round(s) in 288.09s
+[2025-05-31 03:41:16][flwr] 	History (loss, centralized):
+[2025-05-31 03:41:16][flwr] 		round 0: 2.3212934732437134
+[2025-05-31 03:41:16][flwr] 		round 1: 2.4206724762916565
+[2025-05-31 03:41:16][flwr] 		round 2: 2.566487431526184
+[2025-05-31 03:41:16][flwr] 	History (metrics, distributed, fit):
+[2025-05-31 03:41:16][flwr] 	{'accuracy': [(1, 0.2), (2, 0.2)], 'loss': [(1, 0.1), (2, 0.1)]}
+[2025-05-31 03:41:16][flwr] 	History (metrics, centralized):
+[2025-05-31 03:41:16][flwr] 	{'accuracy': [(0, 0.08544921875), (1, 0.087890625), (2, 0.087890625)],
+[2025-05-31 03:41:16][flwr] 	 'loss': [(0, 2.3212934732437134),
+[2025-05-31 03:41:16][flwr] 	          (1, 2.4206724762916565),
+[2025-05-31 03:41:16][flwr] 	          (2, 2.566487431526184)],
+[2025-05-31 03:41:16][flwr] 	 'prov_result': [(1,
+[2025-05-31 03:41:16][flwr] 	                  {'clients': ['7387000257486386462',
+[2025-05-31 03:41:16][flwr] 	                               '8690095942221775978',
+[2025-05-31 03:41:16][flwr] 	                               '10842323477200033631',
+[2025-05-31 03:41:16][flwr] 	                               '2716077041602007218'],
+[2025-05-31 03:41:16][flwr] 	                   'data_points': 2,
+[2025-05-31 03:41:16][flwr] 	                   'eval_metrics': {'Accuracy': 1.0},
+[2025-05-31 03:41:16][flwr] 	                   'prov_layers': {<class 'torch.nn.modules.conv.Conv2d'>,
+[2025-05-31 03:41:16][flwr] 	                                   <class 'torch.nn.modules.linear.Linear'>},
+[2025-05-31 03:41:16][flwr] 	                   'prov_time': 1.956709623336792,
+[2025-05-31 03:41:16][flwr] 	                   'round_id': '1',
+[2025-05-31 03:41:16][flwr] 	                   'test_data_acc': 0.087890625,
+[2025-05-31 03:41:16][flwr] 	                   'test_data_loss': 2.4147896766662598}),
+[2025-05-31 03:41:16][flwr] 	                 (2,
+[2025-05-31 03:41:16][flwr] 	                  {'clients': ['7387000257486386462',
+[2025-05-31 03:41:16][flwr] 	                               '8690095942221775978',
+[2025-05-31 03:41:16][flwr] 	                               '10842323477200033631',
+[2025-05-31 03:41:16][flwr] 	                               '2716077041602007218',
+[2025-05-31 03:41:16][flwr] 	                               '15427838013166656665'],
+[2025-05-31 03:41:16][flwr] 	                   'data_points': 2,
+[2025-05-31 03:41:16][flwr] 	                   'eval_metrics': {'Accuracy': 1.0},
+[2025-05-31 03:41:16][flwr] 	                   'prov_layers': {<class 'torch.nn.modules.conv.Conv2d'>,
+[2025-05-31 03:41:16][flwr] 	                                   <class 'torch.nn.modules.linear.Linear'>},
+[2025-05-31 03:41:16][flwr] 	                   'prov_time': 2.0393996238708496,
+[2025-05-31 03:41:16][flwr] 	                   'round_id': '2',
+[2025-05-31 03:41:16][flwr] 	                   'test_data_acc': 0.087890625,
+[2025-05-31 03:41:16][flwr] 	                   'test_data_loss': 2.5566306114196777})],
+[2025-05-31 03:41:16][flwr] 	 'round': [(0, 0), (1, 1), (2, 2)]}
+[2025-05-31 03:41:16][flwr] 
+[2025-05-31 03:41:16][flwr] ServerApp finished running.
+[2025-05-31 03:41:16][flwr] ServerApp finished running.
+[2025-05-31 03:41:16][flwr] Triggered stop event for Simulation Engine.
+[2025-05-31 03:41:17][flwr] Terminated 10 actors
+[2025-05-31 03:41:18][flwr] Terminated RayBackend
+[2025-05-31 03:41:18][flwr] Stopping Simulation Engine now.
