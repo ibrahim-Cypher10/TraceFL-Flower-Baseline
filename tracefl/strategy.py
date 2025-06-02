@@ -38,6 +38,8 @@ class FedAvgSave(fl.server.strategy.FedAvg):
         )  # Mapping: client ID -> number of training examples
         self.client2class = {}  # Mapping: client ID -> client-to-class mapping
         self.initial_parameters = None  # Will store the initial global model parameters
+        # Initialize attribute to avoid pylint warnings
+        self.gm_ws = None
 
     def set_initial_parameters(self, initial_parameters):
         """Store the initial global model parameters."""

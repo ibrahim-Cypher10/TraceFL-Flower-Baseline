@@ -118,7 +118,7 @@ class FlowerClient(NumPyClient):
         -------
             tuple: Loss value, number of test examples, and evaluation metrics
         """
-        # Placeholder for evaluation logic - not implemented yet
+        # Placeholder for evaluation logic - not needed for now
         return 0.0, 0, {}
 
 

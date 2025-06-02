@@ -49,6 +49,9 @@ class NeuronProvenance:
         self.c2nk = c2nk
         self.client_ids = list(self.c2model.keys())
         self.layer_importance = compute_importance(len(get_all_layers(gmodel)))
+        # Initialize attributes to avoid pylint warnings
+        self.global_neurons_inputs_outputs_batch = []
+        self.inputs2layer_grads = []
 
         logging.info("client ids: %s", self.client_ids)
         self.pk = {

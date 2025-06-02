@@ -57,6 +57,9 @@ class FLSimulation:
         self.local_epochs = le
         # EXTRA: Not essential for basic FL - used for timing
         self.start_time = time.time()
+        # Initialize attributes to avoid pylint warnings
+        self.server_testdata = None
+        self.client2data = {}
 
     def set_server_data(self, server_data):
         """Set the server's dataset for evaluation.

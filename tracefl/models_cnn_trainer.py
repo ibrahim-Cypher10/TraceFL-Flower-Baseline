@@ -65,7 +65,8 @@ class CNNTrainer(Trainer):
             model: The model to use for prediction
             inputs: Input data for prediction
             prediction_loss_only: Whether to only compute loss
-            ignore_keys: Optional list of keys to ignore in inputs (unused)
+            ignore_keys: Optional list of keys to ignore in inputs
+                (unused, kept for API compatibility)
 
         Returns
         -------

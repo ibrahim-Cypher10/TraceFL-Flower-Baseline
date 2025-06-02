@@ -14,6 +14,7 @@ from typing import Any
 
 import medmnist
 import torch
+import torchvision
 from datasets import Dataset, DatasetDict
 from flwr_datasets import FederatedDataset
 from flwr_datasets.partitioner import (
@@ -679,6 +680,12 @@ class ClientsAndServerDatasets:
         """
         self.cfg = cfg
         self.data_dist_partitioner_func = None
+        # Initialize attributes to avoid pylint warnings
+        self.client2data = {}
+        self.server_testdata = None
+        self.client2class = {}
+        self.fds = None
+
         self._set_distriubtion_partitioner()
         self._setup()
 
@@ -781,8 +788,6 @@ def _initialize_dataset(cfg_dataset):
     Dataset
         The initialized dataset.
     """
-    import torchvision  # Import here to avoid circular imports
-
     if cfg_dataset.name == "cifar10":
         return _initialize_image_dataset(
             cfg_dataset,
