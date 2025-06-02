@@ -15,7 +15,7 @@ import torch
 
 from tracefl.models_train_eval import test_neural_network
 from tracefl.models_utils import initialize_model
-from tracefl.neuron_provenance import NeuronProvenance, getAllLayers
+from tracefl.neuron_provenance import NeuronProvenance, get_all_layers
 from tracefl.utils import get_prov_eval_metrics, safe_len
 
 
@@ -31,6 +31,7 @@ class FederatedProvTrue:
         train_cfg: Any,
         prov_cfg: Any,
         round_key: str,
+        *,
         server_test_data: Any,
         client2model: Dict[str, Any],
         client2num_examples: Dict[str, int],
@@ -138,8 +139,6 @@ class FederatedProvTrue:
         assert int(acc) == 1, "Sanity check failed"
         return acc
 
-    from typing import Dict, List
-
     def _compute_eval_metrics(self, input2prov: List[Dict]) -> Dict[str, float]:
         """Compute evaluation metrics for provenance analysis.
 
@@ -242,7 +241,7 @@ class FederatedProvTrue:
                     "prov_time": -1,
                     "round_id": self.round_id,
                     "prov_layers": {
-                        type(layer) for layer in getAllLayers(self.prov_global_model)
+                        type(layer) for layer in get_all_layers(self.prov_global_model)
                     },
                 }
 
@@ -292,19 +291,11 @@ class FederatedProvTrue:
                 "prov_time": end_time - start_time,
                 "round_id": self.round_id,
                 "prov_layers": {
-                    type(layer) for layer in getAllLayers(self.prov_global_model)
+                    type(layer) for layer in get_all_layers(self.prov_global_model)
                 },
             }
 
         # ========== Error Handling ==========
-        except KeyError as e:
-            logging.error(f"Configuration error in provenance analysis: {str(e)}")
-            return {"Error": f"Configuration error: {str(e)}"}
-        except RuntimeError as e:
-            logging.error(f"Runtime error in provenance analysis: {str(e)}")
-            return {"Error": f"Runtime error: {str(e)}"}
-        except Exception as e:
-            logging.error(
-                f"Unexpected error in provenance analysis: {str(e)}", exc_info=True
-            )
+        except (ValueError, RuntimeError, KeyError, OSError) as e:
+            logging.error("Unexpected error in provenance analysis: %s", str(e))
             return {"Error": f"Unexpected error: {str(e)}"}

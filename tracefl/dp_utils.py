@@ -41,14 +41,14 @@ def safe_clip_inputs_inplace(model_update, clipping_norm):
         if input_norm > clipping_norm:
             scaling_factor = clipping_norm / input_norm
             logger.info("Applying clipping with scaling factor: %.6f", scaling_factor)
-            for i in range(len(model_update)):
-                model_update[i] = model_update[i] * scaling_factor
+            for i, update in enumerate(model_update):
+                model_update[i] = update * scaling_factor
 
             # Verify clipping
             final_norm = compute_l2_norm(model_update)
             logger.info("Final norm after clipping: %.6f", final_norm)
 
-    except Exception as e:
+    except (ValueError, TypeError, ZeroDivisionError) as e:
         logger.error("Error in safe_clip_inputs_inplace: %s", str(e))
         raise
 
@@ -78,7 +78,7 @@ def compute_l2_norm(inputs):
         total_norm = float(np.sqrt(sum(norm**2 for norm in array_norms)))
         return total_norm
 
-    except Exception as e:
+    except (ValueError, TypeError) as e:
         logger.error("Error computing L2 norm: %s", str(e))
         return 0.0
 
@@ -94,6 +94,6 @@ def get_norm(input_arrays: NDArrays) -> float:
         total_norm = float(np.sqrt(sum(norm**2 for norm in array_norms)))
         return total_norm
 
-    except Exception as e:
+    except (ValueError, TypeError) as e:
         logger.error("Error in get_norm: %s", str(e))
         return 0.0

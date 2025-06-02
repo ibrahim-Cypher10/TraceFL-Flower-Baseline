@@ -10,7 +10,7 @@ from typing import Any, Dict, List
 import torch
 import torch.nn.functional as F
 import transformers
-import transformers.models.bert.modeling_bert as modeling_bert
+from transformers.models.bert import modeling_bert
 
 from tracefl.models_train_eval import test_neural_network
 from tracefl.utils import compute_importance
@@ -19,7 +19,7 @@ from tracefl.utils import compute_importance
 class NeuronProvenance:
     """Class for tracking neuron-level provenance in neural networks."""
 
-    def __init__(self, cfg, arch, test_data, gmodel, c2model, num_classes, c2nk):
+    def __init__(self, cfg, arch, test_data, *, gmodel, c2model, num_classes, c2nk):
         """Initialize a NeuronProvenance instance.
 
         Parameters
@@ -48,9 +48,9 @@ class NeuronProvenance:
         self.device = cfg.device.device
         self.c2nk = c2nk
         self.client_ids = list(self.c2model.keys())
-        self.layer_importance = compute_importance(len(getAllLayers(gmodel)))
+        self.layer_importance = compute_importance(len(get_all_layers(gmodel)))
 
-        logging.info(f"client ids: {self.client_ids}")
+        logging.info("client ids: %s", self.client_ids)
         self.pk = {
             cid: self.c2nk[cid] / sum(self.c2nk.values()) for cid in self.c2nk.keys()
         }
@@ -71,9 +71,9 @@ class NeuronProvenance:
         inf_mask = torch.isinf(t)
         nan_mask = torch.isnan(t)
         if inf_mask.any() or nan_mask.any():
-            logging.error(f"Inf values: {torch.sum(inf_mask)}")
-            logging.error(f"NaN values: {torch.sum(nan_mask)}")
-            logging.error(f"Total values: {torch.numel(t)}")
+            logging.error("Inf values: %s", torch.sum(inf_mask))
+            logging.error("NaN values: %s", torch.sum(nan_mask))
+            logging.error("Total values: %s", torch.numel(t))
             raise ValueError("Anomalies detected in tensor")
 
     def _calculate_layer_contribution(
@@ -114,7 +114,7 @@ class NeuronProvenance:
             cli_acts = cli_acts.cpu()
 
         max_contributor = max(client2avg, key=lambda cid: client2avg[cid])
-        logging.debug(f"Max contributor: {max_contributor}")
+        logging.debug("Max contributor: %s", max_contributor)
         return client2avg
 
     def _map_client_layer_contributions(self, layer_id: int):
@@ -130,7 +130,7 @@ class NeuronProvenance:
         dict
             Dictionary mapping input indices to client contributions.
         """
-        client2layers = {cid: getAllLayers(cm) for cid, cm in self.c2model.items()}
+        client2layers = {cid: get_all_layers(cm) for cid, cm in self.c2model.items()}
         global_neurons_inputs = self.global_neurons_inputs_outputs_batch[layer_id][
             0
         ].to(self.device)
@@ -152,7 +152,7 @@ class NeuronProvenance:
         input2client2contribution = {}
         for input_id in range(len(self.test_data)):
             logging.debug(
-                f"Mapping client contributions for {input_id} for layer {layer_id}"
+                "Mapping client contributions for %s for layer %s", input_id, layer_id
             )
             c2out_per_input = {
                 cid: client2outputs[cid][input_id] for cid in self.client_ids
@@ -173,12 +173,12 @@ class NeuronProvenance:
     def _inplace_scale_client_weights(self):
         """Scale client model weights based on the number of data points per client."""
         logging.debug("Scaling client weights based on data points per client.")
-        logging.debug(f"Total clients in c2nk: {len(self.c2nk)}")
-        logging.debug(f"Total clients in c2model: {len(self.c2model)}")
+        logging.debug("Total clients in c2nk: %s", len(self.c2nk))
+        logging.debug("Total clients in c2model: %s", len(self.c2model))
         for cid in self.c2model.keys():
             scale_factor = self.c2nk[cid] / sum(self.c2nk.values())
             logging.debug(
-                f"Scaling client {cid} by {scale_factor}, nk = {self.c2nk[cid]}"
+                "Scaling client %s by %s, nk = %s", cid, scale_factor, self.c2nk[cid]
             )
             with torch.no_grad():
                 for cparam in self.c2model[cid].parameters():
@@ -188,8 +188,8 @@ class NeuronProvenance:
     def _capture_layer_io(self):
         """Capture the inputs and outputs of all layers in the global model."""
         hook_manager = HookManager()
-        glayers = getAllLayers(self.gmodel)
-        logging.debug(f"Total layers in global model: {len(glayers)}")
+        glayers = get_all_layers(self.gmodel)
+        logging.debug("Total layers in global model: %s", len(glayers))
         hooks_forward = [hook_manager.insert_forward_hook(layer) for layer in glayers]
         self.gmodel.eval().to(self.device)
 
@@ -303,10 +303,10 @@ class HookManager:
     def insert_forward_hook(self, layer):
         """Insert a forward hook into the specified layer."""
 
-        def forward_hook(module, input_tensor, output_tensor):
+        def forward_hook(_module, input_tensor, output_tensor):
             try:
                 inp = input_tensor[0].detach()
-            except Exception:
+            except (AttributeError, IndexError):
                 inp = input_tensor[0]
             self.forward_hooks_storage.append((inp, output_tensor))
 
@@ -315,11 +315,11 @@ class HookManager:
     def insert_backward_hook(self, layer):
         """Insert a backward hook into the specified layer."""
 
-        def backward_hook(module, input_tensor, output_tensor):
+        def backward_hook(_module, input_tensor, output_tensor):
             try:
                 inp = input_tensor[0].detach()
                 out = output_tensor[0].detach()
-            except Exception:
+            except (AttributeError, IndexError):
                 inp, out = input_tensor[0], output_tensor[0]
             self.backward_hooks_storage.append((inp, out))
 
@@ -349,7 +349,7 @@ def set_gradients_of_model(arch, net, input_data, device, hook_manager):
 def _set_gradients_cnn_model(net, input_for_model, device, hook_manager):
     """Set up hooks and compute gradients for a CNN model."""
     net.zero_grad()
-    all_layers = getAllLayers(net)
+    all_layers = get_all_layers(net)
     hooks = [hook_manager.insert_backward_hook(layer) for layer in all_layers]
     net.to(device)
     img_input = input_for_model["pixel_values"]
@@ -364,7 +364,7 @@ def _set_gradients_cnn_model(net, input_for_model, device, hook_manager):
 def _set_gradients_transformer_model(net, input_data, device, hook_manager):
     """Set up hooks and compute gradients for a transformer model."""
     net.zero_grad()
-    all_layers = getAllLayers(net)
+    all_layers = get_all_layers(net)
     hooks = [hook_manager.insert_backward_hook(layer) for layer in all_layers]
     net.to(device)
     prepared = {
@@ -380,12 +380,12 @@ def _set_gradients_transformer_model(net, input_data, device, hook_manager):
     hook_manager.backward_hooks_storage.reverse()
 
 
-def getAllLayers(net):
+def get_all_layers(net):
     """Retrieve all layers from the model using a BERT-specific extraction."""
-    return getAllLayersBert(net)
+    return get_all_layers_bert(net)
 
 
-def getAllLayersBert(net):
+def get_all_layers_bert(net):
     """Retrieve all layers from the model that are instances of specific layer types."""
     layers = []
     for layer in net.children():
@@ -401,5 +401,5 @@ def getAllLayersBert(net):
         ):
             layers.append(layer)
         elif len(list(layer.children())) > 0:
-            layers.extend(getAllLayersBert(layer))
+            layers.extend(get_all_layers_bert(layer))
     return layers

@@ -15,9 +15,7 @@ from omegaconf import OmegaConf
 
 from flwr.common import Context
 from flwr.server import ServerApp, ServerAppComponents, ServerConfig
-from tracefl.dataset import (
-    get_clients_server_data,
-)
+from tracefl.dataset import get_clients_server_data
 from tracefl.fls import FLSimulation
 from tracefl.utils import set_exp_key
 
@@ -38,7 +36,7 @@ logging.basicConfig(
 
 # Test that logging is working
 logging.info("TraceFL Server Application starting...")
-logging.info(f"Log file location: {log_file_path}")
+logging.info("Log file location: %s", log_file_path)
 
 
 def server_fn(context: Context):

@@ -14,15 +14,9 @@ from omegaconf import OmegaConf
 
 from flwr.client import ClientApp, NumPyClient
 from flwr.common import Context
-from tracefl.dataset import (
-    get_clients_server_data,
-)
+from tracefl.dataset import get_clients_server_data
 from tracefl.models_train_eval import train_neural_network
-from tracefl.models_utils import (
-    get_parameters,
-    initialize_model,
-    set_parameters,
-)
+from tracefl.models_utils import get_parameters, initialize_model, set_parameters
 
 
 class FlowerClient(NumPyClient):
@@ -38,6 +32,7 @@ class FlowerClient(NumPyClient):
         net,
         trainloader,
         local_epochs,
+        *,
         partition_id,
         cfg,
         ds_dict,
@@ -123,7 +118,8 @@ class FlowerClient(NumPyClient):
         -------
             tuple: Loss value, number of test examples, and evaluation metrics
         """
-        pass
+        # Placeholder for evaluation logic - not implemented yet
+        return 0.0, 0, {}
 
 
 def client_fn(context: Context):
@@ -166,12 +162,12 @@ def client_fn(context: Context):
         model_dict["model"],
         client_train_data,
         local_epochs,
-        partition_id,
-        cfg,
-        ds_dict,
-        cfg.tool.tracefl.model.arch,
-        model_dict,
-        ds_dict["client2data"],
+        partition_id=partition_id,
+        cfg=cfg,
+        ds_dict=ds_dict,
+        arch=cfg.tool.tracefl.model.arch,
+        model_dict=model_dict,
+        client2data=ds_dict["client2data"],
     ).to_client()
 
 

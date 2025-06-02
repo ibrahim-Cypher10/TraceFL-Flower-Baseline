@@ -9,18 +9,24 @@ import logging
 import torchvision
 from transformers import Trainer, TrainingArguments
 
-from tracefl.models_cnn_trainer import (
-    _test_cnn,
-    _test_cnn_hf_trainer,
-    _train_cnn,
-)
-from tracefl.models_utils import (
-    _compute_metrics,
-)
+from tracefl.models_cnn_trainer import _test_cnn, _test_cnn_hf_trainer, _train_cnn
+from tracefl.models_utils import _compute_metrics
 
 
-def _train_transformer(model, train_data, test_data, device, cfg):
-    """Train a transformer model using HuggingFace Trainer."""
+def _train_transformer(model, train_data, _test_data, device, cfg):
+    """Train a transformer model using HuggingFace Trainer.
+
+    Args:
+        model: The transformer model to train
+        train_data: Training dataset
+        _test_data: Test dataset (unused, kept for API compatibility)
+        device: Device to train on
+        cfg: Configuration object
+
+    Returns
+    -------
+        Dictionary containing model and training metrics
+    """
     model_dict = {"model": model, "num_classes": cfg.num_classes}
     net = model.to(device)
 
@@ -98,7 +104,7 @@ def _test_transformer_model(args):
     if "audio_feature_extractor" in model_dict:
         tester.tokenizer = model_dict["audio_feature_extractor"]
 
-    logging.debug(f"length of eval dataset: {len(central_server_test_data)}")
+    logging.debug("length of eval dataset: %s", len(central_server_test_data))
     r = tester.evaluate()
     net = net.cpu()
     return r
@@ -170,7 +176,7 @@ def train_neural_network(tconfig):
     """Train either a CNN or Transformer model depending on the config."""
     if tconfig["arch"] == "cnn":
         return _train_cnn(tconfig)
-    elif tconfig["arch"] == "transformer":
+    if tconfig["arch"] == "transformer":
         return _train_transformer(
             tconfig["model"],
             tconfig["train_data"],
@@ -178,8 +184,7 @@ def train_neural_network(tconfig):
             tconfig["device"],
             tconfig,
         )
-    else:
-        raise ValueError(f"Architecture {tconfig['arch']} not supported")
+    raise ValueError(f"Architecture {tconfig['arch']} not supported")
 
 
 def create_model(model_name, num_classes):

@@ -26,8 +26,7 @@ def medical_dataset2labels(dname):
             7: "Cancer-associated Stroma",
             8: "Colorectal Adenocarcinoma",
         }
-    else:
-        return None
+    return None
 
 
 def fix_dataset_keys(dataset):

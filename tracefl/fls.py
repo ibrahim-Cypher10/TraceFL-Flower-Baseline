@@ -16,11 +16,7 @@ from flwr.common import ndarrays_to_parameters
 from tracefl.dp_strategy import TraceFLDifferentialPrivacy
 from tracefl.fl_provenance import round_lambda_prov
 from tracefl.models_train_eval import global_model_eval
-from tracefl.models_utils import (
-    get_parameters,
-    initialize_model,
-    set_parameters,
-)
+from tracefl.models_utils import get_parameters, initialize_model, set_parameters
 from tracefl.strategy import FedAvgSave
 from tracefl.utils import get_backend_config
 
@@ -80,7 +76,7 @@ class FLSimulation:
         if len(self.client2data) != self.cfg.tool.tracefl.data_dist.num_clients:
             self.cfg.tool.tracefl.num_clients = len(self.client2data)
             logging.warning(
-                f"Adjusting number of clients to: {self.cfg.tool.tracefl.num_clients}"
+                "Adjusting number of clients to: %s", self.cfg.tool.tracefl.num_clients
             )
 
     def set_strategy(self):
@@ -144,14 +140,16 @@ class FLSimulation:
                     strategy=strategy,
                     noise_multiplier=self.cfg.tool.tracefl.strategy.noise_multiplier,
                     clipping_norm=self.cfg.tool.tracefl.strategy.clipping_norm,
-                    num_sampled_clients=self.cfg.tool.tracefl.strategy.clients_per_round,
+                    num_sampled_clients=(
+                        self.cfg.tool.tracefl.strategy.clients_per_round
+                    ),
                 )
                 self.strategy = dp_strategy
 
                 logging.info(
-                    f"Differential Privacy enabled: "
-                    f"noise_mult={self.cfg.tool.tracefl.strategy.noise_multiplier}, "
-                    f"clipping_norm={self.cfg.tool.tracefl.strategy.clipping_norm}"
+                    "Differential Privacy enabled: noise_mult=%s, clipping_norm=%s",
+                    self.cfg.tool.tracefl.strategy.noise_multiplier,
+                    self.cfg.tool.tracefl.strategy.clipping_norm,
                 )
             else:
                 logging.info(
@@ -170,10 +168,10 @@ class FLSimulation:
                 self.strategy = strategy
 
         except Exception as e:
-            logging.error(f"Error setting up strategy: {str(e)}")
+            logging.error("Error setting up strategy: %s", str(e))
             raise
 
-    def _fit_metrics_aggregation_fn(self, metrics):
+    def _fit_metrics_aggregation_fn(self, _metrics):
         # Aggregate client metrics without verbose logging
         return {"loss": 0.1, "accuracy": 0.2}
 
@@ -189,13 +187,13 @@ class FLSimulation:
         }
         return config
 
-    def _evaluate_global_model(self, server_round, parameters, config=None):
+    def _evaluate_global_model(self, server_round, parameters, _config=None):
         """Evaluate the global model.
 
         Args:
             server_round: Current server round
             parameters: Model parameters to evaluate
-            config: Optional configuration dictionary (unused)
+            _config: Optional configuration dictionary (unused)
 
         Returns
         -------
@@ -219,15 +217,24 @@ class FLSimulation:
 
             if server_round == 0:
                 logging.info(
-                    f"initial parameters (loss, other metrics): {loss}, "
-                    f"{{'accuracy': {acc}, 'loss': {loss}, 'round': {server_round}}}"
+                    "initial parameters (loss, other metrics): %s, "
+                    "{'accuracy': %s, 'loss': %s, 'round': %s}",
+                    loss,
+                    acc,
+                    loss,
+                    server_round,
                 )
                 return loss, {"accuracy": acc, "loss": loss, "round": server_round}
 
             logging.info(
-                f"fit progress: ({server_round}, {loss}, "
-                f"{{'accuracy': {acc}, 'loss': {loss}, 'round': {server_round}}}, "
-                f"{time.time() - self.start_time})"
+                "fit progress: (%s, %s, "
+                "{'accuracy': %s, 'loss': %s, 'round': %s}, %s)",
+                server_round,
+                loss,
+                acc,
+                loss,
+                server_round,
+                time.time() - self.start_time,
             )
 
             if self.strategy is None:
@@ -267,7 +274,7 @@ class FLSimulation:
             # EXTRA: Not essential for basic FL - provenance analysis code
             if not hasattr(fedavg, "gm_ws"):
                 logging.warning(
-                    f"Skipping provenance analysis for round {server_round}"
+                    "Skipping provenance analysis for round %s", server_round
                 )
                 return loss, {"accuracy": acc, "loss": loss, "round": server_round}
 
@@ -286,7 +293,7 @@ class FLSimulation:
                 "prov_global_model": prov_global_model,
                 "client2model": client2model,
                 "client2num_examples": fedavg.client2num_examples,
-                "ALLROUNDSCLIENTS2CLASS": fedavg.client2class,
+                "all_rounds_clients2class": fedavg.client2class,
                 "central_test_data": self.server_testdata,
                 "server_round": server_round,
             }
@@ -296,18 +303,16 @@ class FLSimulation:
             try:
                 prov_result = round_lambda_prov(**provenance_input)
                 logging.info(
-                    f">> Provenance analysis completed. Results:\n{prov_result}"
+                    ">> Provenance analysis completed. Results:\n%s", prov_result
                 )
-            except KeyError as e:
-                logging.error(f"Configuration error in provenance analysis: {str(e)}")
+            except (KeyError, ValueError) as e:
+                logging.error("Configuration error in provenance analysis: %s", str(e))
                 prov_result = {"Error": f"Configuration error: {str(e)}"}
-            except RuntimeError as e:
-                logging.error(f"Runtime error in provenance analysis: {str(e)}")
+            except (RuntimeError, TypeError) as e:
+                logging.error("Runtime error in provenance analysis: %s", str(e))
                 prov_result = {"Error": f"Runtime error: {str(e)}"}
-            except Exception as e:
-                logging.error(
-                    f"Unexpected error in provenance analysis: {str(e)}", exc_info=True
-                )
+            except (OSError, MemoryError, ImportError) as e:
+                logging.error("Unexpected error in provenance analysis: %s", str(e))
                 prov_result = {"Error": f"Unexpected error: {str(e)}"}
 
             gc.collect()
@@ -318,11 +323,8 @@ class FLSimulation:
                 "prov_result": prov_result,
             }
 
-        except Exception as e:
-            logging.error(
-                f"Evaluation failed during round {server_round}: {str(e)}",
-                exc_info=True,
-            )
+        except (ValueError, RuntimeError, KeyError, OSError) as e:
+            logging.error("Evaluation failed during round %s: %s", server_round, str(e))
             return loss, {
                 "accuracy": 0.0,
                 "loss": loss,

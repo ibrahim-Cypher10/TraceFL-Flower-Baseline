@@ -23,6 +23,7 @@ class CNNTrainer(Trainer):
         self,
         model,
         args,
+        *,
         train_data=None,
         test_data=None,
         compute_metrics=None,
@@ -170,7 +171,7 @@ def _test_cnn_hf_trainer(gm_dict, central_server_test_data, batch_size):
         data_collator=DefaultDataCollator(),
     )
 
-    logging.debug(f"length of eval dataset: {len(central_server_test_data)}")
+    logging.debug("length of eval dataset: %s", len(central_server_test_data))
     results = tester.evaluate(eval_dataset=central_server_test_data)
     net = net.cpu()
     return results

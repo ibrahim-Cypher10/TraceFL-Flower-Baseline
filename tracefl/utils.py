@@ -107,34 +107,37 @@ def set_exp_key(cfg):
 
     if dp_enabled:
         dp_key = (
-            f"DP-(noise{cfg.tool.tracefl.strategy.noise_multiplier}+clip{cfg.tool.tracefl.strategy.clipping_norm})-"
+            f"DP-(noise{cfg.tool.tracefl.strategy.noise_multiplier}+"
+            f"clip{cfg.tool.tracefl.strategy.clipping_norm})-"
             f"{cfg.tool.tracefl.exp_key}-"
             f"{cfg.tool.tracefl.model.name}-{cfg.tool.tracefl.dataset.name}-"
             f"faulty_clients[[]]-"
             f"TClients{cfg.tool.tracefl.data_dist.num_clients}-"
             f"{cfg.tool.tracefl.strategy.name}-(R{cfg.tool.tracefl.strategy.num_rounds}"
             f"-clientsPerR{cfg.tool.tracefl.strategy.clients_per_round})"
-            f"-{cfg.tool.tracefl.data_dist.dist_type}{cfg.tool.tracefl.data_dist.dirichlet_alpha}"
+            f"-{cfg.tool.tracefl.data_dist.dist_type}"
+            f"{cfg.tool.tracefl.data_dist.dirichlet_alpha}"
             f"-batch{cfg.tool.tracefl.data_dist.batch_size}"
             f"-epochs{cfg.tool.tracefl.client.epochs}-"
             f"lr{cfg.tool.tracefl.client.lr}"
         )
         return dp_key
-    else:
-        # Non-DP experiment key
-        non_dp_key = (
-            f"NonDP-{cfg.tool.tracefl.exp_key}-"
-            f"{cfg.tool.tracefl.model.name}-{cfg.tool.tracefl.dataset.name}-"
-            f"faulty_clients[[]]-"
-            f"TClients{cfg.tool.tracefl.data_dist.num_clients}-"
-            f"{cfg.tool.tracefl.strategy.name}-(R{cfg.tool.tracefl.strategy.num_rounds}"
-            f"-clientsPerR{cfg.tool.tracefl.strategy.clients_per_round})"
-            f"-{cfg.tool.tracefl.data_dist.dist_type}{cfg.tool.tracefl.data_dist.dirichlet_alpha}"
-            f"-batch{cfg.tool.tracefl.data_dist.batch_size}"
-            f"-epochs{cfg.tool.tracefl.client.epochs}-"
-            f"lr{cfg.tool.tracefl.client.lr}"
-        )
-        return non_dp_key
+
+    # Non-DP experiment key
+    non_dp_key = (
+        f"NonDP-{cfg.tool.tracefl.exp_key}-"
+        f"{cfg.tool.tracefl.model.name}-{cfg.tool.tracefl.dataset.name}-"
+        f"faulty_clients[[]]-"
+        f"TClients{cfg.tool.tracefl.data_dist.num_clients}-"
+        f"{cfg.tool.tracefl.strategy.name}-(R{cfg.tool.tracefl.strategy.num_rounds}"
+        f"-clientsPerR{cfg.tool.tracefl.strategy.clients_per_round})"
+        f"-{cfg.tool.tracefl.data_dist.dist_type}"
+        f"{cfg.tool.tracefl.data_dist.dirichlet_alpha}"
+        f"-batch{cfg.tool.tracefl.data_dist.batch_size}"
+        f"-epochs{cfg.tool.tracefl.client.epochs}-"
+        f"lr{cfg.tool.tracefl.client.lr}"
+    )
+    return non_dp_key
 
 
 def get_prov_eval_metrics(labels, predicted_labels):
