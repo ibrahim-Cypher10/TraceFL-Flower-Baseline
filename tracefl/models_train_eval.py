@@ -6,7 +6,6 @@ TraceFL federated learning system. It supports both CNN and transformer models.
 
 import logging
 
-import torchvision
 from transformers import Trainer, TrainingArguments
 
 from tracefl.models_cnn_trainer import _test_cnn, _test_cnn_hf_trainer, _train_cnn
@@ -185,12 +184,3 @@ def train_neural_network(tconfig):
             tconfig,
         )
     raise ValueError(f"Architecture {tconfig['arch']} not supported")
-
-
-def create_model(model_name, num_classes):
-    """Create a neural network model based on the specified architecture."""
-    if model_name == "resnet18":
-        return torchvision.models.resnet18(num_classes=num_classes)
-    if model_name == "densenet121":
-        return torchvision.models.densenet121(num_classes=num_classes)
-    raise ValueError(f"Unknown model name: {model_name}")

@@ -6,8 +6,7 @@ import numpy as np
 
 from flwr.common import NDArrays
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
+# Get logger (logging is configured centrally in server_app.py)
 logger = logging.getLogger(__name__)
 
 

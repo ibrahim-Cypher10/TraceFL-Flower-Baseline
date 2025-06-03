@@ -149,22 +149,3 @@ def set_parameters(net, parameters):
     params_dict = zip(net.state_dict().keys(), parameters)
     new_state_dict = {k: torch.from_numpy(v) for k, v in params_dict}
     net.load_state_dict(new_state_dict, strict=False)
-
-
-def create_model(model_name, num_classes, _cfg):
-    """Create a neural network model based on the specified architecture.
-
-    Args:
-        model_name: Name of the model architecture
-        num_classes: Number of output classes
-        _cfg: Configuration object (unused, kept for API compatibility)
-
-    Returns
-    -------
-        Initialized neural network model
-    """
-    if model_name == "resnet18":
-        return torchvision.models.resnet18(num_classes=num_classes)
-    if model_name == "densenet121":
-        return torchvision.models.densenet121(num_classes=num_classes)
-    raise ValueError(f"Unknown model name: {model_name}")

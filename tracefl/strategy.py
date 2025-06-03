@@ -1,8 +1,8 @@
-"""Federated Learning Strategy Module.
+"""TraceFL Federated Learning Strategy Module.
 
-This module implements the core federated learning strategy for the TraceFL system. It
-includes the main strategy class that coordinates the federated learning process,
-handles client selection, model aggregation, and provenance tracking.
+This module implements custom federated learning strategies for TraceFL, including the
+FedAvgSave strategy which extends the standard FedAvg algorithm with provenance tracking
+capabilities.
 """
 
 # strategy.py
@@ -14,7 +14,6 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 import flwr as fl
 from tracefl.global_data import update_round_data
 from tracefl.models_utils import initialize_model, set_parameters
-from tracefl.utils import get_backend_config
 
 
 class FedAvgSave(fl.server.strategy.FedAvg):
@@ -30,8 +29,6 @@ class FedAvgSave(fl.server.strategy.FedAvg):
     def __init__(self, cfg, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.cfg = cfg
-        self.backend_config = get_backend_config(cfg)
-        # EXTRA: Not essential for basic FL - used for provenance tracking
         self.client2ws = {}  # Mapping: client ID -> client model weights (if available)
         self.client2num_examples = (
             {}
@@ -79,7 +76,7 @@ class FedAvgSave(fl.server.strategy.FedAvg):
 
             # Process each client result.
             for client_proxy, fit_res in results:
-                cid = client_proxy.cid  # ✅ Real client ID
+                cid = client_proxy.cid
                 # EXTRA: Not essential for basic FL - used for provenance tracking
                 self.client2ws[cid] = self.get_state_dict_from_parameters(
                     fit_res.parameters

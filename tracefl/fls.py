@@ -18,7 +18,6 @@ from tracefl.fl_provenance import round_lambda_prov
 from tracefl.models_train_eval import global_model_eval
 from tracefl.models_utils import get_parameters, initialize_model, set_parameters
 from tracefl.strategy import FedAvgSave
-from tracefl.utils import get_backend_config
 
 
 class FLSimulation:
@@ -51,7 +50,6 @@ class FLSimulation:
         self.cfg = cfg
         self.strategy = None
         self.device = torch.device(self.cfg.tool.tracefl.device.device)
-        self.backend_config = get_backend_config(cfg)
         self.fraction_fit = ff
         self.num_server_rounds = nsr
         self.local_epochs = le
